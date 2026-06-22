@@ -409,8 +409,8 @@ const fmtSz = b => { if(!b) return '—'; if(b<1024) return b+' B'; if(b<1048576
 const od = d => d && new Date(d)<new Date() && new Date(d).toDateString()!==new Date().toDateString();
 const pName = id => { const p=PROJECTS.find(x=>x.id===id); return p?p.name:'—'; };
 const uName = id => { const u=PROFILES.find(x=>x.id===id); return u?u.full_name:'—'; };
-const canW = () => ['admin','collaboratore'].includes(PROFILE?.role);
-const isAd = () => PROFILE?.role === 'admin';
+const canW = () => ['admin','collaboratore'].includes((PROFILE && PROFILE.role));
+const isAd = () => (PROFILE && PROFILE.role) === 'admin';
 
 function sbadge(s) {
   const m={attivo:'bg',sospeso:'by',completato:'bgr',pianificazione:'bb',da_fare:'bgr',in_corso:'bb',revisione:'by'};
@@ -477,10 +477,10 @@ async function boot() {
   PROFILES = profs||[];
   $('pg-auth').classList.remove('on');
   $('pg-app').classList.add('on');
-  $('sb-av').textContent = ini(PROFILE?.full_name||ME.email);
-  $('sb-nm').textContent = PROFILE?.full_name||ME.email;
+  $('sb-av').textContent = ini(((PROFILE && PROFILE.full_name)||ME.email));
+  $('sb-nm').textContent = ((PROFILE && PROFILE.full_name)||ME.email);
   const rl={admin:'Admin',collaboratore:'Collab.',viewer:'Viewer'};
-  $('sb-rl').textContent = rl[PROFILE?.role]||'';
+  $('sb-rl').textContent = rl[(PROFILE && PROFILE.role)]||'';
   $('ni-users').style.display = isAd()?'flex':'none';
   await go('dashboard');
 }
@@ -490,7 +490,7 @@ let PAGE='';
 async function go(page) {
   PAGE=page;
   document.querySelectorAll('.ni').forEach(el=>el.classList.remove('on'));
-  document.querySelector(`.ni[onclick="go('${page}')"]`)?.classList.add('on');
+  var _ni=document.querySelector('.ni[onclick="go(\''+page+'\')"'); if(_ni) _ni.classList.add('on');
   const titles={dashboard:'Dashboard',projects:'Progetti',tasks:'Task',kanban:'Kanban Board',timeline:'Timeline Gantt',time:'Time Tracking',files:'File Commesse',users:'Gestione Utenti'};
   $('pg-title').textContent = titles[page]||page;
   $('pg-act').innerHTML = '';
@@ -611,7 +611,7 @@ async function saveProject(){
   const pay={name,client:$('p-client').value.trim()||null,status:$('p-status').value,owner_id:$('p-owner').value||null,start_date:$('p-start').value||null,end_date:$('p-end').value||null,amount:$('p-amount').value||null,cig:$('p-cig').value.trim()||null,description:$('p-desc').value.trim()||null,created_by:ME.id};
   let err, newId=EDIT_ID;
   if(EDIT_ID){({error:err}=await SB.from('projects').update(pay).eq('id',EDIT_ID));}
-  else{const{data,error:e}=await SB.from('projects').insert(pay).select().single();err=e;newId=data?.id;
+  else{const{data,error:e}=await SB.from('projects').insert(pay).select().single();err=e;newId=(data && data.id);
     if(!err&&newId) await SB.storage.from('commesse').upload(`${newId}/.keep`,new Blob([''],{type:'text/plain'}),{upsert:true});
   }
   setBtn('sp-btn',false);
@@ -660,7 +660,7 @@ function rTaskTable(list){
 }
 
 function fTasks(q){
-  const s=$('tf')?.value||''; q=q??$('ts')?.value||'';
+  const s=($('tf') ? $('tf').value : '')||''; q=q||($('ts') ? $('ts').value : '')||'';
   let list=TASKS;
   if(q) list=list.filter(t=>t.title.toLowerCase().includes(q.toLowerCase()));
   if(s) list=list.filter(t=>t.status===s);
@@ -714,7 +714,7 @@ async function rKanban(){
     </select>
     ${canW()?`<button class="btn btn-p btn-sm" style="margin-left:6px" onclick="openNewTask()">+ Task</button>`:''}`;
   if(!TASKS.length){const{data}=await SB.from('tasks').select('*');TASKS=data||[];}
-  const pf=$('kf')?.value||'';
+  const pf=($('kf') ? $('kf').value : '')||'';
   const list=pf?TASKS.filter(t=>t.project_id===pf):TASKS;
   const cols=['da_fare','in_corso','revisione','completato'];
   const lbs={da_fare:'Da Fare',in_corso:'In Corso',revisione:'Revisione',completato:'Completato'};
@@ -791,7 +791,7 @@ async function rTime(){
       :entries.slice(0,12).map(e=>`<div class="flex aic gap8" style="padding:8px 0;border-bottom:1px solid var(--border)">
         <div style="flex:1;min-width:0">
           <div class="sm">${esc(e.description||'—')}</div>
-          <div style="font-size:11px;color:var(--muted)">${esc(e.projects?.name||'—')} · ${fmtD(e.entry_date)} · ${esc(e.profiles?.full_name||'—')}</div>
+          <div style="font-size:11px;color:var(--muted)">${esc((e.projects && e.projects.name)||'—')} · ${fmtD(e.entry_date)} · ${esc((e.profiles && e.profiles.full_name)||'—')}</div>
         </div>
         <span class="fw6 sm" style="color:var(--navy);flex-shrink:0">${Number(e.hours).toFixed(1)} h</span>
         ${isAd()?`<button class="btn btn-sm btn-d" onclick="delTE('${e.id}')">✕</button>`:''}
@@ -810,7 +810,7 @@ async function openTEModal(){
 }
 
 async function loadTeTask(){
-  const pid=$('te-proj')?.value; if(!pid) return;
+  var _tep=$('te-proj'); const pid=_tep?_tep.value:''; if(!pid) return;
   const{data}=await SB.from('tasks').select('id,title').eq('project_id',pid).neq('status','completato').order('title');
   $('te-task').innerHTML=`<option value="">— Nessun task specifico —</option>${(data||[]).map(t=>`<option value="${t.id}">${esc(t.title)}</option>`).join('')}`;
 }
@@ -867,10 +867,10 @@ async function rFiles(){
       <thead><tr><th>Nome File</th><th>Commessa</th><th>Caricato da</th><th>Dimensione</th><th>Data</th><th></th></tr></thead>
       <tbody>${files.map(f=>`<tr>
         <td class="fw6">${esc(f.name)}</td>
-        <td class="muted sm">${esc(f.projects?.name||'—')}</td>
-        <td class="sm">${esc(f.profiles?.full_name||'—')}</td>
+        <td class="muted sm">${esc((f.projects && f.projects.name)||'—')}</td>
+        <td class="sm">${esc((f.profiles && f.profiles.full_name)||'—')}</td>
         <td class="muted sm">${fmtSz(f.size_bytes)}</td>
-        <td class="muted sm">${fmtD(f.created_at?.split('T')[0])}</td>
+        <td class="muted sm">${fmtD(f.created_at?f.created_at.split('T')[0]:null)}</td>
         <td class="ac">
           <button class="btn btn-sm" onclick="dlFile('${f.storage_path}','${esc(f.name)}')">⬇ Scarica</button>
           ${isAd()?`<button class="btn btn-sm btn-d" style="margin-left:4px" onclick="delFile('${f.id}','${f.storage_path}')">🗑</button>`:''}
@@ -881,8 +881,8 @@ async function rFiles(){
 }
 
 function updFolderInfo(){
-  const pid=$('up-proj')?.value, el=$('fi-info'); if(!el) return;
-  if(pid){const p=PROJECTS.find(x=>x.id===pid);el.textContent=`📁 Cartella: commesse/${pid}/ — ${p?.name||''}`;el.style.color='var(--blue)';}
+  const pid=($('up-proj') ? $('up-proj').value : ''), el=($('fi-info')); if(!el) return;
+  if(pid){const p=PROJECTS.find(x=>x.id===pid);el.textContent=`📁 Cartella: commesse/${pid}/ — ${(p && p.name)||''}`;el.style.color='var(--blue)';}
   else{el.textContent='Seleziona una commessa per abilitare l\'upload.';el.style.color='';}
 }
 
@@ -891,7 +891,7 @@ function dol(){$('dz').classList.remove('ov2');}
 function ddr(e){e.preventDefault();dol();handleFiles(e.dataTransfer.files);}
 
 async function handleFiles(fileList){
-  const pid=$('up-proj')?.value;
+  const pid=($('up-proj') ? $('up-proj').value : '');
   if(!pid){toast('Seleziona prima una commessa','error');return;}
   Array.from(fileList).forEach(f=>uploadFile(f,pid));
 }
