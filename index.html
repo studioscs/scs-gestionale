@@ -555,7 +555,7 @@ function doRegister() {
     el('aerr').style.display = 'none';
     var ok = document.createElement('div');
     ok.style.cssText = 'background:var(--grnlt);color:var(--grndk);border:1px solid #a3cfbb;border-radius:6px;padding:12px;font-size:13px;margin-top:14px;text-align:center';
-    ok.innerHTML = '✓ Registrazione completata!<br><span style="font-size:12px">Controlla la tua email per confermare l'account, poi accedi.<br>Comunica la tua email all'amministratore per l'attivazione.</span>';
+    ok.innerHTML = '<b>&#10003; Registrazione completata!</b><br><span style="font-size:12px">Controlla la tua email per confermare l&#39;account, poi accedi.<br>Comunica la tua email all&#39;amministratore per l&#39;attivazione.</span>';
     el('abox-inner').appendChild(ok);
   }).catch(function(e) {
     setLoading('rbtn', false);
