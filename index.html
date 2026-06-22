@@ -8,373 +8,322 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#1F3864;--blue:#2E75B6;--blue-lt:#EBF3FB;--blue-dk:#163060;
-  --surface:#F4F6F9;--white:#fff;--border:#DEE2E6;--border2:#CED4DA;
+  --navy:#1F3864;--blue:#2E75B6;--bluelt:#EBF3FB;
+  --bg:#F4F6F9;--white:#fff;--border:#DEE2E6;--border2:#CED4DA;
   --text:#212529;--muted:#6C757D;--muted2:#ADB5BD;
-  --green:#198754;--green-lt:#D1E7DD;--green-dk:#0A3622;
-  --yellow:#856404;--yellow-lt:#FFF3CD;--yellow-dk:#664d03;
-  --red:#B02A37;--red-lt:#F8D7DA;--red-dk:#58151c;
-  --orange:#AD5C00;--orange-lt:#FFF0D6;
+  --green:#198754;--greenlt:#D1E7DD;--greendk:#0A3622;
+  --yellow:#856404;--yellowlt:#FFF3CD;--yellowdk:#664d03;
+  --red:#B02A37;--redlt:#F8D7DA;--reddk:#58151c;
+  --orange:#AD5C00;--orangelt:#FFF0D6;
   --r:6px;--r2:10px;
   --font:"Helvetica Neue",Helvetica,Arial,sans-serif;
 }
-body{font-family:var(--font);font-size:14px;background:var(--surface);color:var(--text);min-height:100vh}
-*{font-family:var(--font)}
+body{font-family:var(--font);font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
+button,input,select,textarea{font-family:var(--font)}
 
-/* ── AUTH ── */
 #pg-auth{display:none;min-height:100vh;background:var(--navy);align-items:center;justify-content:center}
 #pg-auth.on{display:flex}
-.auth-card{background:var(--white);border-radius:var(--r2);padding:40px;width:400px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
-.auth-brand{text-align:center;margin-bottom:32px}
-.auth-brand-name{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
-.auth-brand-sub{font-size:12px;color:var(--muted);margin-top:3px}
-.auth-err{background:var(--red-lt);color:var(--red-dk);border:1px solid #f5c6cb;border-radius:var(--r);padding:9px 12px;font-size:13px;margin-bottom:14px;display:none}
-.auth-err.on{display:block}
-.auth-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:16px}
+.auth-box{background:var(--white);border-radius:var(--r2);padding:40px;width:400px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo-n{font-size:22px;font-weight:700;color:var(--navy)}
+.auth-logo-s{font-size:12px;color:var(--muted);margin-top:3px}
+.auth-err{background:var(--redlt);color:var(--reddk);border:1px solid #f5c6cb;border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:14px;display:none}
 
-/* ── APP ── */
 #pg-app{display:none;height:100vh;overflow:hidden}
 #pg-app.on{display:flex}
 
-/* ── SIDEBAR ── */
 #sb{width:220px;min-width:220px;background:var(--navy);display:flex;flex-direction:column;overflow-y:auto}
 .sb-logo{padding:18px 16px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
 .sb-logo-n{color:#fff;font-size:15px;font-weight:700}
 .sb-logo-s{color:rgba(255,255,255,.4);font-size:11px;margin-top:2px}
 .sb-user{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;min-width:0}
 .sb-uname{color:rgba(255,255,255,.8);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sb-urole{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;background:rgba(255,255,255,.15);color:rgba(255,255,255,.65);flex-shrink:0}
-.sb-sec{padding:10px 0 4px}
+.sb-role{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;background:rgba(255,255,255,.15);color:rgba(255,255,255,.65);flex-shrink:0}
+.sb-sec{padding:8px 0 4px}
 .sb-lbl{color:rgba(255,255,255,.33);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:0 16px 4px}
-.ni{display:flex;align-items:center;gap:9px;padding:8px 16px;color:rgba(255,255,255,.68);font-size:13px;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .1s,color .1s}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 16px;color:rgba(255,255,255,.68);font-size:13px;cursor:pointer;border:none;background:none;width:100%;text-align:left}
 .ni:hover{background:rgba(255,255,255,.07);color:#fff}
 .ni.on{background:rgba(255,255,255,.14);color:#fff;font-weight:500}
-.ni-ic{font-size:15px;width:18px;text-align:center;flex-shrink:0;opacity:.8}
-.ni-badge{margin-left:auto;background:rgba(255,255,255,.18);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700}
+.ni-ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.ni-b{margin-left:auto;background:rgba(255,255,255,.18);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700}
 .sb-foot{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.1)}
-.logout{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.45);font-size:12px;background:none;border:none;cursor:pointer;transition:color .1s;width:100%}
-.logout:hover{color:#fff}
+.logout-btn{color:rgba(255,255,255,.45);font-size:12px;background:none;border:none;cursor:pointer;width:100%;text-align:left;padding:4px 0}
+.logout-btn:hover{color:#fff}
 
-/* ── MAIN ── */
 #main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 #topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.tb-title{font-size:16px;font-weight:600;flex:1}
+.tb-t{font-size:16px;font-weight:600;flex:1}
 #content{flex:1;overflow-y:auto;padding:24px}
 
-/* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:13px;font-weight:500;border:1px solid var(--border2);background:var(--white);color:var(--text);cursor:pointer;transition:background .1s,border-color .1s}
-.btn:hover:not(:disabled){background:var(--surface);border-color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:13px;font-weight:500;border:1px solid var(--border2);background:var(--white);color:var(--text);cursor:pointer}
+.btn:hover{background:var(--bg)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-p{background:var(--navy);color:#fff;border-color:var(--navy)}
-.btn-p:hover:not(:disabled){background:var(--blue);border-color:var(--blue)}
+.btn-p:hover{background:var(--blue);border-color:var(--blue)}
 .btn-sm{padding:5px 10px;font-size:12px}
-.btn-d{background:var(--red-lt);color:var(--red);border-color:transparent}
-.btn-d:hover:not(:disabled){background:var(--red);color:#fff}
-.btn-s{background:var(--green-lt);color:var(--green);border-color:transparent}
+.btn-d{background:var(--redlt);color:var(--red);border-color:transparent}
+.btn-d:hover{background:var(--red);color:#fff}
 
-/* ── CARDS ── */
 .card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
-.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.card-t{font-size:14px;font-weight:600}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ct{font-size:14px;font-weight:600}
 
-/* ── KPI ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
 .kpi{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px}
-.kpi-l{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
-.kpi-v{font-size:28px;font-weight:600;line-height:1}
-.kpi-s{font-size:12px;color:var(--muted);margin-top:4px}
-.kpi-bar{height:3px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden}
-.kpi-fill{height:100%;border-radius:2px}
+.kl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
+.kv{font-size:28px;font-weight:600;line-height:1}
+.ks{font-size:12px;color:var(--muted);margin-top:4px}
+.kbar{height:3px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden}
+.kfill{height:100%;border-radius:2px}
 
-/* ── TABLE ── */
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
-thead th{background:var(--navy);color:#fff;padding:9px 12px;text-align:left;font-weight:500;font-size:12px;letter-spacing:.02em;white-space:nowrap}
+thead th{background:var(--navy);color:#fff;padding:9px 12px;text-align:left;font-weight:500;font-size:12px;white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:#f0f4f9}
 td.ac{white-space:nowrap;text-align:right}
 
-/* ── BADGES ── */
 .bdg{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
-.bdg::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
-.bg{background:var(--green-lt);color:var(--green-dk)}
-.by{background:var(--yellow-lt);color:var(--yellow-dk)}
-.br{background:var(--red-lt);color:var(--red-dk)}
-.bb{background:var(--blue-lt);color:#0C3D78}
+.bg{background:var(--greenlt);color:var(--greendk)}
+.by{background:var(--yellowlt);color:var(--yellowdk)}
+.br{background:var(--redlt);color:var(--reddk)}
+.bb{background:var(--bluelt);color:#0C3D78}
 .bgr{background:#E9ECEF;color:#495057}
-.bo{background:var(--orange-lt);color:var(--orange)}
 
-/* ── FORMS ── */
 .fg{margin-bottom:14px}
 .fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px}
-.fc{width:100%;border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:13px;color:var(--text);background:var(--white);transition:border-color .1s,box-shadow .1s}
-.fc:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(46,117,182,.15);outline:none}
+.fc{width:100%;border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:13px;color:var(--text);background:var(--white)}
+.fc:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(46,117,182,.15)}
 textarea.fc{resize:vertical;min-height:70px}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.fhint{font-size:11px;color:var(--muted2);margin-top:3px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-/* ── MODAL ── */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
 .ov.on{display:flex}
-.modal{background:var(--white);border-radius:var(--r2);box-shadow:0 12px 40px rgba(0,0,0,.25);width:580px;max-width:96vw;max-height:90vh;overflow-y:auto}
-.modal-sm{width:440px}
-.mhdr{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1}
+.modal{background:var(--white);border-radius:var(--r2);box-shadow:0 12px 40px rgba(0,0,0,.25);width:560px;max-width:96vw;max-height:90vh;overflow-y:auto}
+.msm{width:420px}
+.mh{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .mt{font-size:15px;font-weight:600}
 .mx{border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:0}
-.mx:hover{color:var(--text)}
-.mbody{padding:20px}
-.mfoot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--white)}
+.mb{padding:20px}
+.mf{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
 
-/* ── TABS ── */
-.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:18px}
-.tab{padding:8px 16px;border:none;background:none;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
-.tab.on{color:var(--navy);border-bottom-color:var(--navy)}
-.tabp{display:none}.tabp.on{display:block}
-
-/* ── KANBAN ── */
-.kboard{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
-.kcol{background:#ECEEF2;border:1px solid var(--border);border-radius:var(--r2);padding:12px}
-.kcolh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.kcolt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-.kcoln{background:rgba(0,0,0,.08);color:var(--muted);border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700}
-.kcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:box-shadow .1s,border-color .1s}
-.kcard:hover{box-shadow:0 3px 10px rgba(0,0,0,.1);border-color:var(--blue)}
-.kcard-t{font-size:13px;font-weight:500;margin-bottom:6px;line-height:1.35}
-.kcard-m{display:flex;align-items:center;justify-content:space-between}
-.kcard-p{font-size:11px;color:var(--muted)}
-.kcard-d{font-size:11px;color:var(--muted)}
-.kcard-d.od{color:var(--red);font-weight:600}
-
-/* ── GANTT ── */
-.gw{overflow-x:auto}
-.ginner{min-width:900px}
-.ghdr{display:flex}
-.glc{width:240px;min-width:240px;font-size:10px;font-weight:700;color:var(--muted);padding:6px 8px;text-transform:uppercase;background:var(--surface);border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
-.gmo{flex:1;display:grid;background:var(--surface);border-bottom:1px solid var(--border)}
-.gm{font-size:10px;font-weight:700;color:var(--muted);text-align:center;padding:6px 2px;border-right:1px solid var(--border);text-transform:uppercase}
-.grow{display:flex;border-bottom:1px solid var(--border)}
-.grow:hover{background:#f0f4f9}
-.growl{width:240px;min-width:240px;padding:7px 8px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-right:1px solid var(--border);display:flex;align-items:center;gap:6px}
-.gbars{flex:1;position:relative;height:32px}
-.gbar{position:absolute;height:16px;top:8px;border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:10px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:4px}
-
-/* ── FILE UPLOAD ── */
-.dz{border:2px dashed var(--border2);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
-.dz:hover,.dz.ov2{border-color:var(--blue);background:var(--blue-lt)}
-.dz-ico{font-size:28px;color:var(--muted2);margin-bottom:8px}
-.dz-t{font-size:13px;color:var(--muted);line-height:1.5}
-.upi{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;font-size:12px}
-.upi-n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.upi-sz{color:var(--muted);min-width:58px;text-align:right;flex-shrink:0}
-.uprog{height:4px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden}
-.uprog-f{height:100%;background:var(--blue);border-radius:2px;transition:width .3s}
-
-/* ── MISC ── */
 .prio{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .ph{background:#e24b4a}.pm{background:#ef9f27}.pl{background:#639922}
-.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--blue-lt);color:#0C3D78;font-size:10px;font-weight:700;flex-shrink:0}
-.pb{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--bluelt);color:#0C3D78;font-size:10px;font-weight:700;flex-shrink:0}
+.pb{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
 .pbf{height:100%;border-radius:3px;background:var(--blue)}
-.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.aic{align-items:center}
-.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
-.muted{color:var(--muted)}.sm{font-size:12px}.fw6{font-weight:600}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.sep{border:none;border-top:1px solid var(--border);margin:14px 0}
 .empty{text-align:center;padding:44px 20px;color:var(--muted)}
-.empty-i{font-size:36px;margin-bottom:10px;opacity:.3}
-.sw{position:relative;flex:1;max-width:300px}
-.sw input{width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px}
-.sw input:focus{outline:none;border-color:var(--blue)}
-.sw-i{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:13px}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-#tc{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{color:#fff;padding:10px 16px;border-radius:var(--r);font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:tsi .2s ease}
-@keyframes tsi{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
-.info-box{background:var(--blue-lt);border:1px solid #B5D4F4;border-radius:var(--r);padding:10px 14px;font-size:12px;color:#0C3D78;margin-bottom:14px}
+.ei{font-size:36px;margin-bottom:10px;opacity:.3}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ibox{background:var(--bluelt);border:1px solid #B5D4F4;border-radius:var(--r);padding:10px 14px;font-size:12px;color:#0C3D78;margin-bottom:14px}
 .chip{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600}
 .chip-a{background:rgba(176,42,55,.12);color:#B02A37}
 .chip-c{background:rgba(46,117,182,.12);color:#2E75B6}
 .chip-v{background:#E9ECEF;color:#495057}
+.dz{border:2px dashed var(--border2);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer}
+.dz:hover{border-color:var(--blue);background:var(--bluelt)}
+.upi{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;font-size:12px}
+.upn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upsz{color:var(--muted);min-width:58px;text-align:right;flex-shrink:0}
+.uprg{height:4px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden}
+.uprgf{height:100%;background:var(--blue);border-radius:2px}
+#tc{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{color:#fff;padding:10px 16px;border-radius:var(--r);font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.kboard{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
+.kcol{background:#ECEEF2;border:1px solid var(--border);border-radius:var(--r2);padding:12px}
+.kch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.kct{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.kcn{background:rgba(0,0,0,.08);color:var(--muted);border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700}
+.kcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.kcard:hover{box-shadow:0 3px 10px rgba(0,0,0,.1);border-color:var(--blue)}
+.kcard-t{font-size:13px;font-weight:500;margin-bottom:6px;line-height:1.35}
+.gw{overflow-x:auto}
+.gi{min-width:900px}
+.ghdr{display:flex}
+.glc{width:240px;min-width:240px;font-size:10px;font-weight:700;color:var(--muted);padding:6px 8px;text-transform:uppercase;background:var(--bg);border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.gmc{flex:1;display:grid;background:var(--bg);border-bottom:1px solid var(--border)}
+.gm{font-size:10px;font-weight:700;color:var(--muted);text-align:center;padding:6px 2px;border-right:1px solid var(--border);text-transform:uppercase}
+.grow{display:flex;border-bottom:1px solid var(--border)}
+.grow:hover{background:#f0f4f9}
+.growl{width:240px;min-width:240px;padding:7px 8px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-right:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.gbrs{flex:1;position:relative;height:32px}
+.gbar{position:absolute;height:16px;top:8px;border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:10px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:4px}
 </style>
 </head>
 <body>
 
-<!-- AUTH PAGE -->
 <div id="pg-auth" class="on">
-  <div class="auth-card">
-    <div class="auth-brand">
-      <div class="auth-brand-name">SCS Gestionale Progetti</div>
-      <div class="auth-brand-sub">Studio Tecnico SCS S.r.l. tra Professionisti</div>
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-n">SCS Gestionale Progetti</div>
+      <div class="auth-logo-s">Studio Tecnico SCS S.r.l. tra Professionisti</div>
     </div>
     <div class="auth-err" id="aerr"></div>
-    <div class="fg"><label class="fl">Email</label><input class="fc" type="email" id="aemail" placeholder="nome@studiotecnicoscs.com" autocomplete="email"></div>
-    <div class="fg"><label class="fl">Password</label><input class="fc" type="password" id="apass" placeholder="••••••••" autocomplete="current-password"></div>
+    <div class="fg"><label class="fl">Email</label><input class="fc" type="email" id="aemail" placeholder="nome@studiotecnicoscs.com"></div>
+    <div class="fg"><label class="fl">Password</label><input class="fc" type="password" id="apass" placeholder="••••••••"></div>
     <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:4px" id="abtn" onclick="doLogin()">Accedi</button>
-    <div class="auth-hint"><a href="#" onclick="doForgot();return false" style="color:var(--muted)">Password dimenticata?</a></div>
+    <p style="text-align:center;margin-top:14px"><a href="#" onclick="doForgot();return false" style="font-size:12px;color:var(--muted)">Password dimenticata?</a></p>
   </div>
 </div>
 
-<!-- APP PAGE -->
 <div id="pg-app">
-  <!-- SIDEBAR -->
   <nav id="sb">
     <div class="sb-logo">
       <div class="sb-logo-n">SCS Gestionale</div>
       <div class="sb-logo-s">Studio Tecnico SCS S.r.l.</div>
     </div>
     <div class="sb-user">
-      <span class="av" id="sb-av" style="width:28px;height:28px;font-size:10px">??</span>
-      <span class="sb-uname" id="sb-nm">…</span>
-      <span class="sb-urole" id="sb-rl"></span>
+      <span class="av" id="sbav" style="width:28px;height:28px;font-size:10px">??</span>
+      <span class="sb-uname" id="sbnm">...</span>
+      <span class="sb-role" id="sbrl"></span>
     </div>
     <div class="sb-sec">
       <div class="sb-lbl">Principale</div>
-      <button class="ni on" onclick="go('dashboard')"><span class="ni-ic">⊞</span>Dashboard</button>
-      <button class="ni" onclick="go('projects')"><span class="ni-ic">◫</span>Progetti<span class="ni-badge" id="b-p">0</span></button>
-      <button class="ni" onclick="go('tasks')"><span class="ni-ic">☑</span>Task<span class="ni-badge" id="b-t">0</span></button>
-      <button class="ni" onclick="go('kanban')"><span class="ni-ic">▤</span>Kanban</button>
-      <button class="ni" onclick="go('timeline')"><span class="ni-ic">▬</span>Timeline</button>
+      <button class="ni on" id="ni-dashboard" onclick="go('dashboard')"><span class="ni-ic">⊞</span>Dashboard</button>
+      <button class="ni" id="ni-projects" onclick="go('projects')"><span class="ni-ic">◫</span>Progetti<span class="ni-b" id="bp">0</span></button>
+      <button class="ni" id="ni-tasks" onclick="go('tasks')"><span class="ni-ic">☑</span>Task<span class="ni-b" id="bt">0</span></button>
+      <button class="ni" id="ni-kanban" onclick="go('kanban')"><span class="ni-ic">▤</span>Kanban</button>
+      <button class="ni" id="ni-timeline" onclick="go('timeline')"><span class="ni-ic">▬</span>Timeline</button>
     </div>
     <div class="sb-sec">
       <div class="sb-lbl">Gestione</div>
-      <button class="ni" onclick="go('time')"><span class="ni-ic">◷</span>Time Tracking</button>
-      <button class="ni" onclick="go('files')"><span class="ni-ic">📁</span>File Commesse</button>
+      <button class="ni" id="ni-time" onclick="go('time')"><span class="ni-ic">◷</span>Time Tracking</button>
+      <button class="ni" id="ni-files" onclick="go('files')"><span class="ni-ic">📁</span>File Commesse</button>
     </div>
     <div class="sb-sec">
       <div class="sb-lbl">Admin</div>
       <button class="ni" id="ni-users" onclick="go('users')"><span class="ni-ic">👥</span>Utenti</button>
     </div>
     <div class="sb-foot">
-      <button class="logout" onclick="doLogout()">↩ &nbsp;Esci dall'account</button>
+      <button class="logout-btn" onclick="doLogout()">↩ Esci dall'account</button>
     </div>
   </nav>
-
-  <!-- MAIN -->
   <div id="main">
     <div id="topbar">
-      <span class="tb-title" id="pg-title">Dashboard</span>
-      <div id="pg-act"></div>
+      <span class="tb-t" id="pgtitle">Dashboard</span>
+      <div id="pgact"></div>
     </div>
-    <div id="content">
-      <div class="empty"><div class="empty-i">⏳</div><p>Caricamento…</p></div>
-    </div>
+    <div id="content"><div class="empty"><div class="ei">⏳</div><p>Caricamento...</p></div></div>
   </div>
 </div>
 
 <!-- MODAL PROGETTO -->
-<div class="ov" id="m-proj" onmousedown="ovClick(event,'m-proj')">
+<div class="ov" id="m-proj">
   <div class="modal">
-    <div class="mhdr"><span class="mt" id="m-proj-t">Nuovo Progetto</span><button class="mx" onclick="closeM('m-proj')">✕</button></div>
-    <div class="mbody">
-      <div class="fgrid">
-        <div class="fg"><label class="fl">Nome Progetto *</label><input class="fc" id="p-name" placeholder="Es. Ristrutturazione Scuola Collodi"></div>
-        <div class="fg"><label class="fl">Cliente / Committente</label><input class="fc" id="p-client" placeholder="Ente o privato"></div>
+    <div class="mh"><span class="mt" id="mptit">Nuovo Progetto</span><button class="mx" onclick="closeM('m-proj')">✕</button></div>
+    <div class="mb">
+      <div class="fg2">
+        <div class="fg"><label class="fl">Nome *</label><input class="fc" id="pp-name"></div>
+        <div class="fg"><label class="fl">Cliente</label><input class="fc" id="pp-client"></div>
       </div>
-      <div class="fgrid">
+      <div class="fg2">
         <div class="fg"><label class="fl">Stato</label>
-          <select class="fc" id="p-status">
+          <select class="fc" id="pp-status">
             <option value="pianificazione">In Pianificazione</option>
             <option value="attivo" selected>Attivo</option>
             <option value="sospeso">Sospeso</option>
             <option value="completato">Completato</option>
           </select>
         </div>
-        <div class="fg"><label class="fl">Responsabile</label><select class="fc" id="p-owner"></select></div>
+        <div class="fg"><label class="fl">Responsabile</label><select class="fc" id="pp-owner"></select></div>
       </div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">Data Inizio</label><input type="date" class="fc" id="p-start"></div>
-        <div class="fg"><label class="fl">Data Fine Prevista</label><input type="date" class="fc" id="p-end"></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Data Inizio</label><input type="date" class="fc" id="pp-start"></div>
+        <div class="fg"><label class="fl">Data Fine</label><input type="date" class="fc" id="pp-end"></div>
       </div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">Importo Contratto (€)</label><input type="number" class="fc" id="p-amount" step="0.01" placeholder="0.00"></div>
-        <div class="fg"><label class="fl">CIG / CUP</label><input class="fc" id="p-cig" placeholder="Solo per appalti pubblici"></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Importo (€)</label><input type="number" class="fc" id="pp-amount" step="0.01"></div>
+        <div class="fg"><label class="fl">CIG / CUP</label><input class="fc" id="pp-cig"></div>
       </div>
-      <div class="fg"><label class="fl">Descrizione</label><textarea class="fc" id="p-desc" rows="3" placeholder="Note, riferimenti, elaborati…"></textarea></div>
-      <div class="info-box">📁 Al salvataggio viene creata automaticamente la cartella <strong>commesse/{id-progetto}/</strong> in Supabase Storage.</div>
+      <div class="fg"><label class="fl">Descrizione</label><textarea class="fc" id="pp-desc" rows="3"></textarea></div>
+      <div class="ibox">📁 Al salvataggio viene creata automaticamente la cartella commesse/{id}/ in Supabase Storage.</div>
     </div>
-    <div class="mfoot">
+    <div class="mf">
       <button class="btn" onclick="closeM('m-proj')">Annulla</button>
-      <button class="btn btn-p" id="sp-btn" onclick="saveProject()">Salva Progetto</button>
+      <button class="btn btn-p" id="spbtn" onclick="saveProject()">Salva Progetto</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL TASK -->
-<div class="ov" id="m-task" onmousedown="ovClick(event,'m-task')">
+<div class="ov" id="m-task">
   <div class="modal">
-    <div class="mhdr"><span class="mt" id="m-task-t">Nuovo Task</span><button class="mx" onclick="closeM('m-task')">✕</button></div>
-    <div class="mbody">
-      <div class="fg"><label class="fl">Titolo *</label><input class="fc" id="t-title" placeholder="Descrizione del task"></div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">Progetto *</label><select class="fc" id="t-proj"></select></div>
-        <div class="fg"><label class="fl">Assegnato a</label><select class="fc" id="t-ass"><option value="">— Nessuno —</option></select></div>
+    <div class="mh"><span class="mt" id="mttit">Nuovo Task</span><button class="mx" onclick="closeM('m-task')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Titolo *</label><input class="fc" id="tt-title"></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Progetto *</label><select class="fc" id="tt-proj"></select></div>
+        <div class="fg"><label class="fl">Assegnato a</label><select class="fc" id="tt-ass"></select></div>
       </div>
-      <div class="fgrid">
+      <div class="fg2">
         <div class="fg"><label class="fl">Stato</label>
-          <select class="fc" id="t-status">
-            <option value="da_fare">Da Fare</option><option value="in_corso">In Corso</option>
-            <option value="revisione">In Revisione</option><option value="completato">Completato</option>
+          <select class="fc" id="tt-status">
+            <option value="da_fare">Da Fare</option>
+            <option value="in_corso">In Corso</option>
+            <option value="revisione">In Revisione</option>
+            <option value="completato">Completato</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Priorità</label>
-          <select class="fc" id="t-prio">
-            <option value="alta">Alta</option><option value="media" selected>Media</option><option value="bassa">Bassa</option>
+          <select class="fc" id="tt-prio">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Media</option>
+            <option value="bassa">Bassa</option>
           </select>
         </div>
       </div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">Scadenza</label><input type="date" class="fc" id="t-due"></div>
-        <div class="fg"><label class="fl">Ore Stimate</label><input type="number" class="fc" id="t-hours" step="0.5" min="0" placeholder="0"></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Scadenza</label><input type="date" class="fc" id="tt-due"></div>
+        <div class="fg"><label class="fl">Ore Stimate</label><input type="number" class="fc" id="tt-hours" step="0.5" min="0"></div>
       </div>
-      <div class="fg"><label class="fl">Note</label><textarea class="fc" id="t-notes" rows="3" placeholder="Riferimenti normativi, elaborati, note tecniche…"></textarea></div>
+      <div class="fg"><label class="fl">Note</label><textarea class="fc" id="tt-notes" rows="3"></textarea></div>
     </div>
-    <div class="mfoot">
+    <div class="mf">
       <button class="btn" onclick="closeM('m-task')">Annulla</button>
-      <button class="btn btn-p" id="st-btn" onclick="saveTask()">Salva Task</button>
+      <button class="btn btn-p" id="stbtn" onclick="saveTask()">Salva Task</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL TIME -->
-<div class="ov" id="m-time" onmousedown="ovClick(event,'m-time')">
-  <div class="modal modal-sm">
-    <div class="mhdr"><span class="mt">Registra Ore</span><button class="mx" onclick="closeM('m-time')">✕</button></div>
-    <div class="mbody">
+<div class="ov" id="m-time">
+  <div class="modal msm">
+    <div class="mh"><span class="mt">Registra Ore</span><button class="mx" onclick="closeM('m-time')">✕</button></div>
+    <div class="mb">
       <div class="fg"><label class="fl">Progetto *</label><select class="fc" id="te-proj" onchange="loadTeTask()"></select></div>
-      <div class="fg"><label class="fl">Task (opzionale)</label><select class="fc" id="te-task"><option value="">— Nessun task specifico —</option></select></div>
-      <div class="fg"><label class="fl">Descrizione Attività</label><input class="fc" id="te-desc" placeholder="Es. Progettazione strutturale, DL, sopralluogo…"></div>
-      <div class="fgrid">
+      <div class="fg"><label class="fl">Task</label><select class="fc" id="te-task"></select></div>
+      <div class="fg"><label class="fl">Descrizione</label><input class="fc" id="te-desc" placeholder="Es. Progettazione strutturale, DL..."></div>
+      <div class="fg2">
         <div class="fg"><label class="fl">Data *</label><input type="date" class="fc" id="te-date"></div>
-        <div class="fg"><label class="fl">Ore *</label><input type="number" class="fc" id="te-hours" step="0.5" min="0.5" max="24" placeholder="0.0"></div>
+        <div class="fg"><label class="fl">Ore *</label><input type="number" class="fc" id="te-hours" step="0.5" min="0.5" max="24"></div>
       </div>
     </div>
-    <div class="mfoot">
+    <div class="mf">
       <button class="btn" onclick="closeM('m-time')">Annulla</button>
-      <button class="btn btn-p" id="ste-btn" onclick="saveTE()">Registra</button>
+      <button class="btn btn-p" id="stebtn" onclick="saveTE()">Registra</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL USER -->
-<div class="ov" id="m-user" onmousedown="ovClick(event,'m-user')">
-  <div class="modal modal-sm">
-    <div class="mhdr"><span class="mt">Modifica Ruolo Utente</span><button class="mx" onclick="closeM('m-user')">✕</button></div>
-    <div class="mbody">
-      <div class="info-box">Per invitare nuovi utenti usa <strong>Supabase Dashboard → Authentication → Users → Invite user</strong>. Qui puoi modificare il ruolo degli utenti già registrati.</div>
-      <div class="fg"><label class="fl">Utente</label><input class="fc" id="u-name-disp" disabled></div>
+<!-- MODAL UTENTE -->
+<div class="ov" id="m-user">
+  <div class="modal msm">
+    <div class="mh"><span class="mt">Modifica Ruolo</span><button class="mx" onclick="closeM('m-user')">✕</button></div>
+    <div class="mb">
+      <div class="ibox">Per invitare nuovi utenti: Supabase Dashboard → Authentication → Users → Invite user.</div>
+      <div class="fg"><label class="fl">Utente</label><input class="fc" id="mu-name" disabled></div>
       <div class="fg"><label class="fl">Ruolo</label>
-        <select class="fc" id="u-role">
+        <select class="fc" id="mu-role">
           <option value="viewer">Viewer (solo lettura)</option>
           <option value="collaboratore">Collaboratore (legge e modifica)</option>
           <option value="admin">Admin (accesso completo)</option>
         </select>
       </div>
     </div>
-    <div class="mfoot">
+    <div class="mf">
       <button class="btn" onclick="closeM('m-user')">Annulla</button>
-      <button class="btn btn-p" id="su-btn" onclick="saveUserRole()">Salva Ruolo</button>
+      <button class="btn btn-p" id="subtn" onclick="saveUserRole()">Salva</button>
     </div>
   </div>
 </div>
@@ -382,609 +331,905 @@ textarea.fc{resize:vertical;min-height:70px}
 <div id="tc"></div>
 
 <script>
-// ════════════════════════════════════════════════════════
-// CONFIG — inserisci qui URL e KEY del tuo progetto Supabase
-// ════════════════════════════════════════════════════════
-const SUPA_URL = 'https://dnpmgbczqyxgfvfqduhr.supabase.co';
-const SUPA_KEY = 'INSERISCI_QUI_LA_TUA_ANON_KEY';
-// ════════════════════════════════════════════════════════
+var SUPA_URL = 'https://aaneazempmhuznvornwn.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhbmVhemVtcG1odXpudm9ybnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzA0MzIsImV4cCI6MjA5NzcwNjQzMn0.SStt_69iTybb_z-JqWYWhavROWmURyfZEguW96FQDIA';
+var SB = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-const SB = supabase.createClient(SUPA_URL, SUPA_KEY);
+var ME = null;
+var PROFILE = null;
+var PROFILES = [];
+var PROJECTS = [];
+var TASKS = [];
+var EDIT_ID = null;
+var EDIT_UID = null;
+var PAGE = '';
 
-let ME = null;       // auth user
-let PROFILE = null;  // profile row
-let PROFILES = [];   // all profiles cache
-let PROJECTS = [];   // projects cache
-let TASKS = [];      // tasks cache
-let EDIT_ID = null;  // modal editing id
-let EDIT_USER_ID = null;
+function g(id) { return document.getElementById(id); }
 
-// ── UTILS ──
-const $ = id => document.getElementById(id);
-const esc = s => !s ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const ini = n => !n ? '?' : n.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-const fmtD = d => { if(!d) return '—'; const[y,m,g]=(d||'').split('T')[0].split('-'); return `${g}/${m}/${y}`; };
-const fmtE = n => !n && n!==0 ? '—' : Number(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
-const fmtSz = b => { if(!b) return '—'; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; if(b<1073741824) return (b/1048576).toFixed(1)+' MB'; return (b/1073741824).toFixed(2)+' GB'; };
-const od = d => d && new Date(d)<new Date() && new Date(d).toDateString()!==new Date().toDateString();
-const pName = id => { const p=PROJECTS.find(x=>x.id===id); return p?p.name:'—'; };
-const uName = id => { const u=PROFILES.find(x=>x.id===id); return u?u.full_name:'—'; };
-const canW = () => ['admin','collaboratore'].includes(PROFILE?.role);
-const isAd = () => PROFILE?.role === 'admin';
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function ini(n) {
+  if (!n) return '?';
+  var parts = n.split(' ');
+  var result = '';
+  for (var i = 0; i < parts.length && result.length < 2; i++) {
+    if (parts[i]) result += parts[i][0];
+  }
+  return result.toUpperCase();
+}
+
+function fmtD(d) {
+  if (!d) return '—';
+  var s = String(d).split('T')[0];
+  var parts = s.split('-');
+  if (parts.length < 3) return d;
+  return parts[2] + '/' + parts[1] + '/' + parts[0];
+}
+
+function fmtE(n) {
+  if (!n && n !== 0) return '—';
+  return Number(n).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+}
+
+function fmtSz(b) {
+  if (!b) return '—';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
+}
+
+function isOD(d) {
+  if (!d) return false;
+  var dt = new Date(d);
+  var now = new Date();
+  return dt < now && dt.toDateString() !== now.toDateString();
+}
+
+function pName(id) {
+  for (var i = 0; i < PROJECTS.length; i++) {
+    if (PROJECTS[i].id === id) return PROJECTS[i].name;
+  }
+  return '—';
+}
+
+function uName(id) {
+  for (var i = 0; i < PROFILES.length; i++) {
+    if (PROFILES[i].id === id) return PROFILES[i].full_name;
+  }
+  return '—';
+}
+
+function canW() {
+  if (!PROFILE) return false;
+  return PROFILE.role === 'admin' || PROFILE.role === 'collaboratore';
+}
+
+function isAd() {
+  if (!PROFILE) return false;
+  return PROFILE.role === 'admin';
+}
 
 function sbadge(s) {
-  const m={attivo:'bg',sospeso:'by',completato:'bgr',pianificazione:'bb',da_fare:'bgr',in_corso:'bb',revisione:'by'};
-  const l={attivo:'Attivo',sospeso:'Sospeso',completato:'Completato',pianificazione:'Pianificazione',da_fare:'Da Fare',in_corso:'In Corso',revisione:'Revisione'};
-  return `<span class="bdg ${m[s]||'bgr'}">${l[s]||s}</span>`;
-}
-function pcls(p){ return {alta:'ph',media:'pm',bassa:'pl'}[p]||'pm'; }
-
-function toast(msg, type='info') {
-  const c=$('tc'), el=document.createElement('div');
-  el.className='toast';
-  el.style.background = type==='error'?'#B02A37':type==='success'?'#198754':'var(--navy)';
-  el.textContent=msg; c.appendChild(el);
-  setTimeout(()=>el.remove(), 3500);
-}
-
-function setBtn(id, loading, label='Salva') {
-  const b=$(id); if(!b) return;
-  if(loading){ b._t=b.innerHTML; b.innerHTML='<span class="spin"></span>'; b.disabled=true; }
-  else { b.innerHTML=b._t||label; b.disabled=false; }
+  var map = {
+    attivo: 'bg', sospeso: 'by', completato: 'bgr',
+    pianificazione: 'bb', da_fare: 'bgr', in_corso: 'bb', revisione: 'by'
+  };
+  var lbl = {
+    attivo:'Attivo', sospeso:'Sospeso', completato:'Completato',
+    pianificazione:'Pianificazione', da_fare:'Da Fare', in_corso:'In Corso', revisione:'Revisione'
+  };
+  var cls = map[s] || 'bgr';
+  var txt = lbl[s] || s;
+  return '<span class="bdg ' + cls + '">' + txt + '</span>';
 }
 
-function openM(id){ $(id).classList.add('on'); }
-function closeM(id){ $(id).classList.remove('on'); EDIT_ID=null; EDIT_USER_ID=null; }
-function ovClick(e,id){ if(e.target===e.currentTarget) closeM(id); }
+function pcls(p) {
+  if (p === 'alta') return 'ph';
+  if (p === 'bassa') return 'pl';
+  return 'pm';
+}
+
+function toast(msg, type) {
+  var c = g('tc');
+  var el = document.createElement('div');
+  el.className = 'toast';
+  el.style.background = type === 'error' ? '#B02A37' : type === 'success' ? '#198754' : 'var(--navy)';
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 3500);
+}
+
+function showErr(msg) {
+  var e = g('aerr');
+  e.textContent = msg;
+  e.style.display = 'block';
+}
+
+function openM(id) { g(id).classList.add('on'); }
+function closeM(id) { g(id).classList.remove('on'); EDIT_ID = null; EDIT_UID = null; }
+
+function setBtn(id, loading, lbl) {
+  var b = g(id);
+  if (!b) return;
+  if (loading) { b._t = b.textContent; b.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite"></span>'; b.disabled = true; }
+  else { b.textContent = b._t || lbl || 'Salva'; b.disabled = false; }
+}
 
 // ── AUTH ──
-async function doLogin() {
-  const email=$('aemail').value.trim(), pass=$('apass').value;
-  const errEl=$('aerr'); errEl.classList.remove('on');
-  if(!email||!pass){ showErr('Inserire email e password.'); return; }
-  setBtn('abtn',true,'Accedi');
-  const {error} = await SB.auth.signInWithPassword({email,password:pass});
-  setBtn('abtn',false,'Accedi');
-  if(error){ showErr(error.message); return; }
-  await boot();
+function doLogin() {
+  var errEl = g('aerr');
+  errEl.style.display = 'none';
+  var email = g('aemail').value.trim();
+  var pass = g('apass').value;
+  if (!email || !pass) { showErr('Inserire email e password.'); return; }
+  setBtn('abtn', true, 'Accedi');
+  SB.auth.signInWithPassword({ email: email, password: pass }).then(function(res) {
+    setBtn('abtn', false, 'Accedi');
+    if (res.error) { showErr(res.error.message); return; }
+    boot();
+  }).catch(function(err) {
+    setBtn('abtn', false, 'Accedi');
+    showErr('Errore: ' + err.message);
+  });
 }
 
-function showErr(msg){ const e=$('aerr'); e.textContent=msg; e.classList.add('on'); }
-
-async function doForgot() {
-  const email=$('aemail').value.trim();
-  if(!email){ toast('Inserisci prima la tua email.','error'); return; }
-  const {error}=await SB.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
-  if(error) toast(error.message,'error');
-  else toast('Email di reset inviata — controlla la casella.','success');
+function doForgot() {
+  var email = g('aemail').value.trim();
+  if (!email) { toast('Inserisci prima la tua email.', 'error'); return; }
+  SB.auth.resetPasswordForEmail(email, { redirectTo: window.location.href }).then(function(res) {
+    if (res.error) toast(res.error.message, 'error');
+    else toast('Email di reset inviata.', 'success');
+  });
 }
 
-async function doLogout() {
-  await SB.auth.signOut();
-  ME=null; PROFILE=null;
-  $('pg-app').classList.remove('on');
-  $('pg-auth').classList.add('on');
+function doLogout() {
+  SB.auth.signOut().then(function() {
+    ME = null; PROFILE = null;
+    g('pg-app').classList.remove('on');
+    g('pg-auth').classList.add('on');
+  });
 }
 
 // ── BOOT ──
-async function boot() {
-  const {data:{user}} = await SB.auth.getUser();
-  if(!user) return;
-  ME = user;
-  const {data:prof} = await SB.from('profiles').select('*').eq('id',ME.id).single();
-  PROFILE = prof;
-  const {data:profs} = await SB.from('profiles').select('*').order('full_name');
-  PROFILES = profs||[];
-  $('pg-auth').classList.remove('on');
-  $('pg-app').classList.add('on');
-  $('sb-av').textContent = ini(PROFILE?.full_name||ME.email);
-  $('sb-nm').textContent = PROFILE?.full_name||ME.email;
-  const rl={admin:'Admin',collaboratore:'Collab.',viewer:'Viewer'};
-  $('sb-rl').textContent = rl[PROFILE?.role]||'';
-  $('ni-users').style.display = isAd()?'flex':'none';
-  await go('dashboard');
+function boot() {
+  SB.auth.getUser().then(function(res) {
+    if (!res.data || !res.data.user) return;
+    ME = res.data.user;
+    SB.from('profiles').select('*').eq('id', ME.id).single().then(function(r) {
+      PROFILE = r.data;
+      SB.from('profiles').select('*').order('full_name').then(function(r2) {
+        PROFILES = r2.data || [];
+        g('pg-auth').classList.remove('on');
+        g('pg-app').classList.add('on');
+        var nm = (PROFILE && PROFILE.full_name) ? PROFILE.full_name : ME.email;
+        g('sbav').textContent = ini(nm);
+        g('sbnm').textContent = nm;
+        var rlmap = { admin: 'Admin', collaboratore: 'Collab.', viewer: 'Viewer' };
+        g('sbrl').textContent = (PROFILE && rlmap[PROFILE.role]) ? rlmap[PROFILE.role] : '';
+        g('ni-users').style.display = isAd() ? 'flex' : 'none';
+        go('dashboard');
+      });
+    });
+  });
 }
 
-// ── NAVIGATION ──
-let PAGE='';
-async function go(page) {
-  PAGE=page;
-  document.querySelectorAll('.ni').forEach(el=>el.classList.remove('on'));
-  document.querySelector(`.ni[onclick="go('${page}')"]`)?.classList.add('on');
-  const titles={dashboard:'Dashboard',projects:'Progetti',tasks:'Task',kanban:'Kanban Board',timeline:'Timeline Gantt',time:'Time Tracking',files:'File Commesse',users:'Gestione Utenti'};
-  $('pg-title').textContent = titles[page]||page;
-  $('pg-act').innerHTML = '';
-  const R={dashboard:rDash,projects:rProjects,tasks:rTasks,kanban:rKanban,timeline:rTimeline,time:rTime,files:rFiles,users:rUsers};
-  if(R[page]) await R[page]();
+// ── NAV ──
+function go(page) {
+  PAGE = page;
+  var ids = ['dashboard','projects','tasks','kanban','timeline','time','files','users'];
+  for (var i = 0; i < ids.length; i++) {
+    var el = g('ni-' + ids[i]);
+    if (el) el.classList.remove('on');
+  }
+  var active = g('ni-' + page);
+  if (active) active.classList.add('on');
+  var titles = { dashboard:'Dashboard', projects:'Progetti', tasks:'Task', kanban:'Kanban Board', timeline:'Timeline Gantt', time:'Time Tracking', files:'File Commesse', users:'Gestione Utenti' };
+  g('pgtitle').textContent = titles[page] || page;
+  g('pgact').innerHTML = '';
+  if (page === 'dashboard') rDash();
+  else if (page === 'projects') rProjects();
+  else if (page === 'tasks') rTasks();
+  else if (page === 'kanban') rKanban();
+  else if (page === 'timeline') rTimeline();
+  else if (page === 'time') rTime();
+  else if (page === 'files') rFiles();
+  else if (page === 'users') rUsers();
+}
+
+function updateBadges() {
+  var ap = 0, ot = 0;
+  for (var i = 0; i < PROJECTS.length; i++) { if (PROJECTS[i].status === 'attivo') ap++; }
+  for (var j = 0; j < TASKS.length; j++) { if (TASKS[j].status !== 'completato') ot++; }
+  g('bp').textContent = ap;
+  g('bt').textContent = ot;
 }
 
 // ── DASHBOARD ──
-async function rDash() {
-  $('pg-act').innerHTML = canW() ? `<button class="btn btn-p btn-sm" onclick="openNewProj()">+ Progetto</button><button class="btn btn-sm" style="margin-left:6px" onclick="openNewTask()">+ Task</button>` : '';
-  const [{data:projs},{data:tsk},{data:te}] = await Promise.all([
-    SB.from('projects').select('*').order('created_at',{ascending:false}),
-    SB.from('tasks').select('*').order('created_at',{ascending:false}),
+function rDash() {
+  var act = '';
+  if (canW()) act = '<button class="btn btn-p btn-sm" onclick="openNewProj()">+ Progetto</button> <button class="btn btn-sm" onclick="openNewTask()">+ Task</button>';
+  g('pgact').innerHTML = act;
+
+  Promise.all([
+    SB.from('projects').select('*').order('created_at', { ascending: false }),
+    SB.from('tasks').select('*').order('created_at', { ascending: false }),
     SB.from('time_entries').select('hours,entry_date')
-  ]);
-  PROJECTS=projs||[]; TASKS=tsk||[];
-  const act=PROJECTS.filter(p=>p.status==='attivo').length;
-  const doneT=TASKS.filter(t=>t.status==='completato').length;
-  const odT=TASKS.filter(t=>t.status!=='completato'&&od(t.due_date)).length;
-  const totH=(te||[]).reduce((a,e)=>a+Number(e.hours||0),0);
-  const now=new Date();
-  const mH=(te||[]).filter(e=>{const d=new Date(e.entry_date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce((a,e)=>a+Number(e.hours||0),0);
-  updateBadges();
+  ]).then(function(results) {
+    PROJECTS = results[0].data || [];
+    TASKS = results[1].data || [];
+    var te = results[2].data || [];
 
-  $('content').innerHTML=`
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-l">Progetti Attivi</div><div class="kpi-v">${act}</div><div class="kpi-s">su ${PROJECTS.length} totali</div><div class="kpi-bar"><div class="kpi-fill" style="width:${PROJECTS.length?Math.round(act/PROJECTS.length*100):0}%;background:var(--blue)"></div></div></div>
-    <div class="kpi"><div class="kpi-l">Task Completati</div><div class="kpi-v">${doneT}</div><div class="kpi-s">su ${TASKS.length} totali</div><div class="kpi-bar"><div class="kpi-fill" style="width:${TASKS.length?Math.round(doneT/TASKS.length*100):0}%;background:var(--green)"></div></div></div>
-    <div class="kpi"><div class="kpi-l">Task Scaduti</div><div class="kpi-v" style="color:${odT>0?'var(--red)':'inherit'}">${odT}</div><div class="kpi-s">aperti oltre scadenza</div><div class="kpi-bar"><div class="kpi-fill" style="width:${TASKS.length?Math.round(odT/TASKS.length*100):0}%;background:var(--red)"></div></div></div>
-    <div class="kpi"><div class="kpi-l">Ore Registrate</div><div class="kpi-v">${totH.toFixed(1)}</div><div class="kpi-s">${mH.toFixed(1)} h questo mese</div><div class="kpi-bar"><div class="kpi-fill" style="width:${totH>0?Math.min(100,Math.round(mH/totH*100)):0}%;background:var(--yellow)"></div></div></div>
-  </div>
-  <div class="g2">
-    <div class="card">
-      <div class="card-hdr"><span class="card-t">Task Aperti</span><button class="btn btn-sm" onclick="go('tasks')">Tutti →</button></div>
-      ${!TASKS.filter(t=>t.status!=='completato').length?`<div class="empty"><div class="empty-i">☑</div><p>Nessun task aperto</p></div>`
-      :TASKS.filter(t=>t.status!=='completato').slice(0,8).map(t=>`
-        <div class="flex aic gap8" style="padding:8px 0;border-bottom:1px solid var(--border)">
-          <span class="prio ${pcls(t.priority)}"></span>
-          <div style="flex:1;min-width:0"><div class="sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.title)}</div><div style="font-size:11px;color:var(--muted)">${esc(pName(t.project_id))}</div></div>
-          <span style="font-size:11px;flex-shrink:0;color:${od(t.due_date)?'var(--red)':'var(--muted)'}">${fmtD(t.due_date)}</span>
-          ${sbadge(t.status)}
-        </div>`).join('')}
-    </div>
-    <div class="card">
-      <div class="card-hdr"><span class="card-t">Progetti Recenti</span><button class="btn btn-sm" onclick="go('projects')">Tutti →</button></div>
-      ${!PROJECTS.length?`<div class="empty"><div class="empty-i">◫</div><p>Nessun progetto</p></div>`
-      :PROJECTS.slice(0,6).map(p=>{const pt=TASKS.filter(t=>t.project_id===p.id);const done=pt.filter(t=>t.status==='completato').length;const pct=pt.length?Math.round(done/pt.length*100):0;return`
-        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
-          <div class="flex aic" style="justify-content:space-between;margin-bottom:4px"><span class="sm fw6">${esc(p.name)}</span>${sbadge(p.status)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${esc(p.client||'—')} · ${pt.length} task</div>
-          <div class="pb"><div class="pbf" style="width:${pct}%"></div></div>
-        </div>`;}).join('')}
-    </div>
-  </div>`;
-}
+    var actP = 0;
+    for (var i = 0; i < PROJECTS.length; i++) { if (PROJECTS[i].status === 'attivo') actP++; }
+    var doneT = 0, odT = 0;
+    for (var j = 0; j < TASKS.length; j++) {
+      if (TASKS[j].status === 'completato') doneT++;
+      else if (isOD(TASKS[j].due_date)) odT++;
+    }
+    var totH = 0;
+    var now = new Date();
+    var mH = 0;
+    for (var k = 0; k < te.length; k++) {
+      totH += Number(te[k].hours || 0);
+      var d = new Date(te[k].entry_date);
+      if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+        mH += Number(te[k].hours || 0);
+      }
+    }
+    updateBadges();
 
-function updateBadges(){
-  $('b-p').textContent=PROJECTS.filter(p=>p.status==='attivo').length;
-  $('b-t').textContent=TASKS.filter(t=>t.status!=='completato').length;
+    var pct1 = PROJECTS.length ? Math.round(actP / PROJECTS.length * 100) : 0;
+    var pct2 = TASKS.length ? Math.round(doneT / TASKS.length * 100) : 0;
+    var pct3 = TASKS.length ? Math.round(odT / TASKS.length * 100) : 0;
+    var pct4 = totH > 0 ? Math.min(100, Math.round(mH / totH * 100)) : 0;
+
+    var openT = '';
+    var openTasks = [];
+    for (var x = 0; x < TASKS.length; x++) { if (TASKS[x].status !== 'completato') openTasks.push(TASKS[x]); }
+    openTasks = openTasks.slice(0, 8);
+    if (!openTasks.length) {
+      openT = '<div class="empty"><div class="ei">☑</div><p>Nessun task aperto</p></div>';
+    } else {
+      for (var t = 0; t < openTasks.length; t++) {
+        var tk = openTasks[t];
+        var odColor = isOD(tk.due_date) ? 'var(--red)' : 'var(--muted)';
+        openT += '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">'
+          + '<span class="prio ' + pcls(tk.priority) + '"></span>'
+          + '<div style="flex:1;min-width:0"><div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(tk.title) + '</div>'
+          + '<div style="font-size:11px;color:var(--muted)">' + esc(pName(tk.project_id)) + '</div></div>'
+          + '<span style="font-size:11px;flex-shrink:0;color:' + odColor + '">' + fmtD(tk.due_date) + '</span>'
+          + sbadge(tk.status) + '</div>';
+      }
+    }
+
+    var projH = '';
+    var projList = PROJECTS.slice(0, 6);
+    if (!projList.length) {
+      projH = '<div class="empty"><div class="ei">◫</div><p>Nessun progetto</p></div>';
+    } else {
+      for (var p = 0; p < projList.length; p++) {
+        var pr = projList[p];
+        var pt = 0, pd = 0;
+        for (var tx = 0; tx < TASKS.length; tx++) {
+          if (TASKS[tx].project_id === pr.id) {
+            pt++;
+            if (TASKS[tx].status === 'completato') pd++;
+          }
+        }
+        var pp = pt ? Math.round(pd / pt * 100) : 0;
+        projH += '<div style="padding:8px 0;border-bottom:1px solid var(--border)">'
+          + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
+          + '<span style="font-size:13px;font-weight:600">' + esc(pr.name) + '</span>' + sbadge(pr.status) + '</div>'
+          + '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">' + esc(pr.client || '—') + ' · ' + pt + ' task</div>'
+          + '<div class="pb"><div class="pbf" style="width:' + pp + '%"></div></div></div>';
+      }
+    }
+
+    var odColor3 = odT > 0 ? 'var(--red)' : 'inherit';
+    g('content').innerHTML = '<div class="kgrid">'
+      + '<div class="kpi"><div class="kl">Progetti Attivi</div><div class="kv">' + actP + '</div><div class="ks">su ' + PROJECTS.length + ' totali</div><div class="kbar"><div class="kfill" style="width:' + pct1 + '%;background:var(--blue)"></div></div></div>'
+      + '<div class="kpi"><div class="kl">Task Completati</div><div class="kv">' + doneT + '</div><div class="ks">su ' + TASKS.length + ' totali</div><div class="kbar"><div class="kfill" style="width:' + pct2 + '%;background:var(--green)"></div></div></div>'
+      + '<div class="kpi"><div class="kl">Task Scaduti</div><div class="kv" style="color:' + odColor3 + '">' + odT + '</div><div class="ks">aperti oltre scadenza</div><div class="kbar"><div class="kfill" style="width:' + pct3 + '%;background:var(--red)"></div></div></div>'
+      + '<div class="kpi"><div class="kl">Ore Registrate</div><div class="kv">' + totH.toFixed(1) + '</div><div class="ks">' + mH.toFixed(1) + ' h questo mese</div><div class="kbar"><div class="kfill" style="width:' + pct4 + '%;background:var(--yellow)"></div></div></div>'
+      + '</div>'
+      + '<div class="g2">'
+      + '<div class="card"><div class="ch"><span class="ct">Task Aperti</span><button class="btn btn-sm" onclick="go(\'tasks\')">Tutti →</button></div>' + openT + '</div>'
+      + '<div class="card"><div class="ch"><span class="ct">Progetti Recenti</span><button class="btn btn-sm" onclick="go(\'projects\')">Tutti →</button></div>' + projH + '</div>'
+      + '</div>';
+  });
 }
 
 // ── PROJECTS ──
-async function rProjects(){
-  $('pg-act').innerHTML=`
-    <div class="sw"><span class="sw-i">🔍</span><input placeholder="Cerca…" oninput="fProj(this.value)" id="ps"></div>
-    ${canW()?`<button class="btn btn-p btn-sm" style="margin-left:6px" onclick="openNewProj()">+ Nuovo Progetto</button>`:''}`;
-  const {data}=await SB.from('projects').select('*').order('created_at',{ascending:false});
-  PROJECTS=data||[];
-  rProjTable(PROJECTS);
+function rProjects() {
+  var act = canW() ? '<button class="btn btn-p btn-sm" onclick="openNewProj()">+ Nuovo Progetto</button>' : '';
+  g('pgact').innerHTML = '<input placeholder="Cerca..." oninput="fProj(this.value)" style="padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;width:220px;margin-right:8px"> ' + act;
+  SB.from('projects').select('*').order('created_at', { ascending: false }).then(function(r) {
+    PROJECTS = r.data || [];
+    rProjTable(PROJECTS);
+  });
 }
 
-function rProjTable(list){
-  if(!list.length){$('content').innerHTML=`<div class="card"><div class="empty"><div class="empty-i">◫</div><p>Nessun progetto. ${canW()?'<a onclick="openNewProj()" href="#">Crea il primo.</a>':''}</p></div></div>`;return;}
-  $('content').innerHTML=`<div class="card"><div class="tw"><table>
-    <thead><tr><th>Progetto</th><th>Cliente</th><th>Responsabile</th><th>Stato</th><th>Inizio</th><th>Fine Prev.</th><th>Importo</th><th>Progress</th>${canW()?'<th></th>':''}</tr></thead>
-    <tbody>${list.map(p=>{
-      const pt=TASKS.filter(t=>t.project_id===p.id);
-      const done=pt.filter(t=>t.status==='completato').length;
-      const pct=pt.length?Math.round(done/pt.length*100):0;
-      return`<tr>
-        <td><span class="fw6">${esc(p.name)}</span>${p.cig?`<div class="sm muted">CIG: ${esc(p.cig)}</div>`:''}</td>
-        <td class="muted sm">${esc(p.client||'—')}</td>
-        <td>${p.owner_id?`<div class="flex aic gap8"><span class="av" style="width:22px;height:22px">${ini(uName(p.owner_id))}</span><span class="sm">${esc(uName(p.owner_id))}</span></div>`:'—'}</td>
-        <td>${sbadge(p.status)}</td>
-        <td class="muted sm">${fmtD(p.start_date)}</td>
-        <td class="sm" style="color:${od(p.end_date)?'var(--red)':'var(--muted)'}">${fmtD(p.end_date)}</td>
-        <td class="sm fw6">${fmtE(p.amount)}</td>
-        <td style="min-width:90px"><div class="sm muted mb8">${pct}%</div><div class="pb"><div class="pbf" style="width:${pct}%"></div></div></td>
-        ${canW()?`<td class="ac"><button class="btn btn-sm" onclick="editProj('${p.id}')">✏️</button>${isAd()?`<button class="btn btn-sm btn-d" style="margin-left:4px" onclick="delProj('${p.id}')">🗑</button>`:''}</td>`:''}
-      </tr>`;}).join('')}
-    </tbody></table></div></div>`;
-}
-
-function fProj(q){rProjTable(q?PROJECTS.filter(p=>(p.name+' '+(p.client||'')).toLowerCase().includes(q.toLowerCase())):PROJECTS);}
-
-function openNewProj(){
-  EDIT_ID=null; $('m-proj-t').textContent='Nuovo Progetto';
-  ['p-name','p-client','p-amount','p-cig','p-desc'].forEach(id=>$(id).value='');
-  $('p-status').value='attivo'; $('p-start').value=''; $('p-end').value='';
-  $('p-owner').innerHTML=`<option value="">— Nessuno —</option>${PROFILES.map(u=>`<option value="${u.id}">${esc(u.full_name)}</option>`).join('')}`;
-  openM('m-proj');
-}
-
-function editProj(id){
-  const p=PROJECTS.find(x=>x.id===id); if(!p) return;
-  EDIT_ID=id; $('m-proj-t').textContent='Modifica Progetto';
-  $('p-name').value=p.name||''; $('p-client').value=p.client||'';
-  $('p-status').value=p.status||'attivo'; $('p-start').value=p.start_date||'';
-  $('p-end').value=p.end_date||''; $('p-amount').value=p.amount||''; $('p-cig').value=p.cig||'';
-  $('p-desc').value=p.description||'';
-  $('p-owner').innerHTML=`<option value="">— Nessuno —</option>${PROFILES.map(u=>`<option value="${u.id}" ${u.id===p.owner_id?'selected':''}>${esc(u.full_name)}</option>`).join('')}`;
-  openM('m-proj');
-}
-
-async function saveProject(){
-  const name=$('p-name').value.trim(); if(!name){toast('Nome obbligatorio','error');return;}
-  setBtn('sp-btn',true);
-  const pay={name,client:$('p-client').value.trim()||null,status:$('p-status').value,owner_id:$('p-owner').value||null,start_date:$('p-start').value||null,end_date:$('p-end').value||null,amount:$('p-amount').value||null,cig:$('p-cig').value.trim()||null,description:$('p-desc').value.trim()||null,created_by:ME.id};
-  let err, newId=EDIT_ID;
-  if(EDIT_ID){({error:err}=await SB.from('projects').update(pay).eq('id',EDIT_ID));}
-  else{const{data,error:e}=await SB.from('projects').insert(pay).select().single();err=e;newId=data?.id;
-    if(!err&&newId) await SB.storage.from('commesse').upload(`${newId}/.keep`,new Blob([''],{type:'text/plain'}),{upsert:true});
+function rProjTable(list) {
+  if (!list.length) { g('content').innerHTML = '<div class="card"><div class="empty"><div class="ei">◫</div><p>Nessun progetto.</p></div></div>'; return; }
+  var rows = '';
+  for (var i = 0; i < list.length; i++) {
+    var p = list[i];
+    var pt = 0, pd = 0;
+    for (var j = 0; j < TASKS.length; j++) {
+      if (TASKS[j].project_id === p.id) { pt++; if (TASKS[j].status === 'completato') pd++; }
+    }
+    var pct = pt ? Math.round(pd / pt * 100) : 0;
+    var odStyle = isOD(p.end_date) ? 'color:var(--red)' : 'color:var(--muted)';
+    var ownerHtml = p.owner_id ? ('<div style="display:flex;align-items:center;gap:6px"><span class="av" style="width:22px;height:22px">' + ini(uName(p.owner_id)) + '</span><span style="font-size:12px">' + esc(uName(p.owner_id)) + '</span></div>') : '—';
+    var actBtns = '';
+    if (canW()) {
+      actBtns = '<button class="btn btn-sm" onclick="editProj(\'' + p.id + '\')">✏️</button>';
+      if (isAd()) actBtns += ' <button class="btn btn-sm btn-d" onclick="delProj(\'' + p.id + '\')">🗑</button>';
+    }
+    rows += '<tr>'
+      + '<td><span style="font-weight:600">' + esc(p.name) + '</span>' + (p.cig ? '<div style="font-size:11px;color:var(--muted)">CIG: ' + esc(p.cig) + '</div>' : '') + '</td>'
+      + '<td style="color:var(--muted);font-size:12px">' + esc(p.client || '—') + '</td>'
+      + '<td>' + ownerHtml + '</td>'
+      + '<td>' + sbadge(p.status) + '</td>'
+      + '<td style="color:var(--muted);font-size:12px">' + fmtD(p.start_date) + '</td>'
+      + '<td style="' + odStyle + ';font-size:12px">' + fmtD(p.end_date) + '</td>'
+      + '<td style="font-size:12px;font-weight:600">' + fmtE(p.amount) + '</td>'
+      + '<td style="min-width:90px"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">' + pct + '%</div><div class="pb"><div class="pbf" style="width:' + pct + '%"></div></div></td>'
+      + (canW() ? '<td class="ac">' + actBtns + '</td>' : '')
+      + '</tr>';
   }
-  setBtn('sp-btn',false);
-  if(err){toast(err.message,'error');return;}
-  toast(EDIT_ID?'Progetto aggiornato':'Progetto creato','success');
-  closeM('m-proj'); rProjects();
+  var hdAct = canW() ? '<th></th>' : '';
+  g('content').innerHTML = '<div class="card"><div class="tw"><table><thead><tr><th>Progetto</th><th>Cliente</th><th>Responsabile</th><th>Stato</th><th>Inizio</th><th>Fine</th><th>Importo</th><th>Avanzamento</th>' + hdAct + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
 }
 
-async function delProj(id){
-  if(!confirm('Eliminare questo progetto con tutti i task, le ore e i file?')) return;
-  const{error}=await SB.from('projects').delete().eq('id',id);
-  if(error){toast(error.message,'error');return;}
-  toast('Progetto eliminato'); rProjects();
+function fProj(q) {
+  if (!q) { rProjTable(PROJECTS); return; }
+  var q2 = q.toLowerCase();
+  var list = [];
+  for (var i = 0; i < PROJECTS.length; i++) {
+    var p = PROJECTS[i];
+    if ((p.name + ' ' + (p.client || '')).toLowerCase().indexOf(q2) >= 0) list.push(p);
+  }
+  rProjTable(list);
+}
+
+function openNewProj() {
+  EDIT_ID = null;
+  g('mptit').textContent = 'Nuovo Progetto';
+  g('pp-name').value = ''; g('pp-client').value = ''; g('pp-amount').value = '';
+  g('pp-cig').value = ''; g('pp-desc').value = ''; g('pp-start').value = ''; g('pp-end').value = '';
+  g('pp-status').value = 'attivo';
+  var opts = '<option value="">— Nessuno —</option>';
+  for (var i = 0; i < PROFILES.length; i++) opts += '<option value="' + PROFILES[i].id + '">' + esc(PROFILES[i].full_name) + '</option>';
+  g('pp-owner').innerHTML = opts;
+  openM('m-proj');
+}
+
+function editProj(id) {
+  var p = null;
+  for (var i = 0; i < PROJECTS.length; i++) { if (PROJECTS[i].id === id) { p = PROJECTS[i]; break; } }
+  if (!p) return;
+  EDIT_ID = id;
+  g('mptit').textContent = 'Modifica Progetto';
+  g('pp-name').value = p.name || ''; g('pp-client').value = p.client || '';
+  g('pp-status').value = p.status || 'attivo'; g('pp-start').value = p.start_date || '';
+  g('pp-end').value = p.end_date || ''; g('pp-amount').value = p.amount || '';
+  g('pp-cig').value = p.cig || ''; g('pp-desc').value = p.description || '';
+  var opts = '<option value="">— Nessuno —</option>';
+  for (var j = 0; j < PROFILES.length; j++) {
+    var sel = PROFILES[j].id === p.owner_id ? ' selected' : '';
+    opts += '<option value="' + PROFILES[j].id + '"' + sel + '>' + esc(PROFILES[j].full_name) + '</option>';
+  }
+  g('pp-owner').innerHTML = opts;
+  openM('m-proj');
+}
+
+function saveProject() {
+  var name = g('pp-name').value.trim();
+  if (!name) { toast('Nome obbligatorio', 'error'); return; }
+  setBtn('spbtn', true);
+  var pay = {
+    name: name, client: g('pp-client').value.trim() || null,
+    status: g('pp-status').value, owner_id: g('pp-owner').value || null,
+    start_date: g('pp-start').value || null, end_date: g('pp-end').value || null,
+    amount: g('pp-amount').value || null, cig: g('pp-cig').value.trim() || null,
+    description: g('pp-desc').value.trim() || null, created_by: ME.id
+  };
+  if (EDIT_ID) {
+    SB.from('projects').update(pay).eq('id', EDIT_ID).then(function(r) {
+      setBtn('spbtn', false, 'Salva Progetto');
+      if (r.error) { toast(r.error.message, 'error'); return; }
+      toast('Progetto aggiornato', 'success'); closeM('m-proj'); rProjects();
+    });
+  } else {
+    SB.from('projects').insert(pay).select().single().then(function(r) {
+      setBtn('spbtn', false, 'Salva Progetto');
+      if (r.error) { toast(r.error.message, 'error'); return; }
+      var newId = r.data && r.data.id;
+      if (newId) {
+        SB.storage.from('commesse').upload(newId + '/.keep', new Blob([''], { type: 'text/plain' }), { upsert: true });
+      }
+      toast('Progetto creato', 'success'); closeM('m-proj'); rProjects();
+    });
+  }
+}
+
+function delProj(id) {
+  if (!confirm('Eliminare questo progetto con tutti i task, le ore e i file?')) return;
+  SB.from('projects').delete().eq('id', id).then(function(r) {
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    toast('Progetto eliminato'); rProjects();
+  });
 }
 
 // ── TASKS ──
-async function rTasks(){
-  $('pg-act').innerHTML=`
-    <div class="sw"><span class="sw-i">🔍</span><input placeholder="Cerca task…" oninput="fTasks(this.value)" id="ts"></div>
-    <select class="btn btn-sm" id="tf" onchange="fTasks()" style="padding:5px 8px;margin-left:6px">
-      <option value="">Tutti</option><option value="da_fare">Da Fare</option><option value="in_corso">In Corso</option><option value="revisione">Revisione</option><option value="completato">Completato</option>
-    </select>
-    ${canW()?`<button class="btn btn-p btn-sm" style="margin-left:6px" onclick="openNewTask()">+ Task</button>`:''}`;
-  const [{data:tsk},{data:projs}]=await Promise.all([
-    SB.from('tasks').select('*').order('created_at',{ascending:false}),
+function rTasks() {
+  var act = canW() ? '<button class="btn btn-p btn-sm" onclick="openNewTask()">+ Task</button>' : '';
+  g('pgact').innerHTML = '<input placeholder="Cerca task..." oninput="fTasks(this.value)" id="tsrch" style="padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;width:200px;margin-right:6px">'
+    + '<select id="tsfilt" onchange="fTasks()" style="padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;margin-right:6px"><option value="">Tutti gli stati</option><option value="da_fare">Da Fare</option><option value="in_corso">In Corso</option><option value="revisione">Revisione</option><option value="completato">Completato</option></select> ' + act;
+  Promise.all([
+    SB.from('tasks').select('*').order('created_at', { ascending: false }),
     SB.from('projects').select('id,name')
-  ]);
-  TASKS=tsk||[]; PROJECTS=projs||[];
-  rTaskTable(TASKS);
+  ]).then(function(res) {
+    TASKS = res[0].data || [];
+    PROJECTS = res[1].data || [];
+    rTaskTable(TASKS);
+  });
 }
 
-function rTaskTable(list){
-  if(!list.length){$('content').innerHTML=`<div class="card"><div class="empty"><div class="empty-i">☑</div><p>Nessun task trovato.</p></div></div>`;return;}
-  $('content').innerHTML=`<div class="card"><div class="tw"><table>
-    <thead><tr><th>P.</th><th>Titolo</th><th>Progetto</th><th>Assegnato</th><th>Stato</th><th>Scadenza</th><th>Ore</th>${canW()?'<th></th>':''}</tr></thead>
-    <tbody>${list.map(t=>`<tr>
-      <td><span class="prio ${pcls(t.priority)}"></span></td>
-      <td><span class="fw6">${esc(t.title)}</span>${t.notes?`<div class="sm muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.notes)}</div>`:''}</td>
-      <td class="muted sm">${esc(pName(t.project_id))}</td>
-      <td>${t.assignee_id?`<div class="flex aic gap8"><span class="av" style="width:22px;height:22px">${ini(uName(t.assignee_id))}</span><span class="sm">${esc(uName(t.assignee_id))}</span></div>`:'—'}</td>
-      <td>${sbadge(t.status)}</td>
-      <td class="sm" style="color:${od(t.due_date)?'var(--red)':'var(--muted)'};font-weight:${od(t.due_date)?'600':'400'}">${fmtD(t.due_date)}${od(t.due_date)?' ⚠':''}</td>
-      <td class="muted sm" style="text-align:center">${t.estimated_hours||'—'}</td>
-      ${canW()?`<td class="ac"><button class="btn btn-sm" onclick="editTask('${t.id}')">✏️</button>${isAd()?`<button class="btn btn-sm btn-d" style="margin-left:4px" onclick="delTask('${t.id}')">🗑</button>`:''}</td>`:''}
-    </tr>`).join('')}</tbody></table></div></div>`;
+function rTaskTable(list) {
+  if (!list.length) { g('content').innerHTML = '<div class="card"><div class="empty"><div class="ei">☑</div><p>Nessun task trovato.</p></div></div>'; return; }
+  var rows = '';
+  for (var i = 0; i < list.length; i++) {
+    var t = list[i];
+    var odStyle = isOD(t.due_date) ? 'color:var(--red);font-weight:600' : 'color:var(--muted)';
+    var odWarn = isOD(t.due_date) ? ' ⚠' : '';
+    var assHtml = t.assignee_id ? ('<div style="display:flex;align-items:center;gap:6px"><span class="av" style="width:22px;height:22px">' + ini(uName(t.assignee_id)) + '</span><span style="font-size:12px">' + esc(uName(t.assignee_id)) + '</span></div>') : '—';
+    var noteHtml = t.notes ? ('<div style="font-size:11px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(t.notes) + '</div>') : '';
+    var actBtns = '';
+    if (canW()) {
+      actBtns = '<button class="btn btn-sm" onclick="editTask(\'' + t.id + '\')">✏️</button>';
+      if (isAd()) actBtns += ' <button class="btn btn-sm btn-d" onclick="delTask(\'' + t.id + '\')">🗑</button>';
+    }
+    rows += '<tr>'
+      + '<td><span class="prio ' + pcls(t.priority) + '"></span></td>'
+      + '<td><span style="font-weight:600">' + esc(t.title) + '</span>' + noteHtml + '</td>'
+      + '<td style="color:var(--muted);font-size:12px">' + esc(pName(t.project_id)) + '</td>'
+      + '<td>' + assHtml + '</td>'
+      + '<td>' + sbadge(t.status) + '</td>'
+      + '<td style="' + odStyle + ';font-size:12px">' + fmtD(t.due_date) + odWarn + '</td>'
+      + '<td style="font-size:12px;color:var(--muted);text-align:center">' + (t.estimated_hours || '—') + '</td>'
+      + (canW() ? '<td class="ac">' + actBtns + '</td>' : '')
+      + '</tr>';
+  }
+  var hdAct = canW() ? '<th></th>' : '';
+  g('content').innerHTML = '<div class="card"><div class="tw"><table><thead><tr><th>P.</th><th>Titolo</th><th>Progetto</th><th>Assegnato</th><th>Stato</th><th>Scadenza</th><th>Ore</th>' + hdAct + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
 }
 
-function fTasks(q){
-  const s=$('tf')?.value||''; q=q??$('ts')?.value||'';
-  let list=TASKS;
-  if(q) list=list.filter(t=>t.title.toLowerCase().includes(q.toLowerCase()));
-  if(s) list=list.filter(t=>t.status===s);
+function fTasks(q) {
+  var srch = g('tsrch');
+  var filt = g('tsfilt');
+  var qv = (q !== undefined) ? q : (srch ? srch.value : '');
+  var sv = filt ? filt.value : '';
+  var list = [];
+  for (var i = 0; i < TASKS.length; i++) {
+    var t = TASKS[i];
+    var matchQ = !qv || t.title.toLowerCase().indexOf(qv.toLowerCase()) >= 0;
+    var matchS = !sv || t.status === sv;
+    if (matchQ && matchS) list.push(t);
+  }
   rTaskTable(list);
 }
 
-function openNewTask(pid){
-  EDIT_ID=null; $('m-task-t').textContent='Nuovo Task';
-  ['t-title','t-notes'].forEach(id=>$(id).value='');
-  $('t-due').value=''; $('t-hours').value=''; $('t-status').value='da_fare'; $('t-prio').value='media';
-  $('t-proj').innerHTML=PROJECTS.map(p=>`<option value="${p.id}" ${p.id===pid?'selected':''}>${esc(p.name)}</option>`).join('');
-  $('t-ass').innerHTML=`<option value="">— Nessuno —</option>${PROFILES.map(u=>`<option value="${u.id}">${esc(u.full_name)}</option>`).join('')}`;
+function openNewTask(pid) {
+  EDIT_ID = null;
+  g('mttit').textContent = 'Nuovo Task';
+  g('tt-title').value = ''; g('tt-notes').value = ''; g('tt-due').value = ''; g('tt-hours').value = '';
+  g('tt-status').value = 'da_fare'; g('tt-prio').value = 'media';
+  var popts = '';
+  for (var i = 0; i < PROJECTS.length; i++) {
+    var sel = PROJECTS[i].id === pid ? ' selected' : '';
+    popts += '<option value="' + PROJECTS[i].id + '"' + sel + '>' + esc(PROJECTS[i].name) + '</option>';
+  }
+  g('tt-proj').innerHTML = popts;
+  var aopts = '<option value="">— Nessuno —</option>';
+  for (var j = 0; j < PROFILES.length; j++) aopts += '<option value="' + PROFILES[j].id + '">' + esc(PROFILES[j].full_name) + '</option>';
+  g('tt-ass').innerHTML = aopts;
   openM('m-task');
 }
 
-function editTask(id){
-  const t=TASKS.find(x=>x.id===id); if(!t) return;
-  EDIT_ID=id; $('m-task-t').textContent='Modifica Task';
-  $('t-title').value=t.title||''; $('t-notes').value=t.notes||'';
-  $('t-due').value=t.due_date||''; $('t-hours').value=t.estimated_hours||'';
-  $('t-status').value=t.status||'da_fare'; $('t-prio').value=t.priority||'media';
-  $('t-proj').innerHTML=PROJECTS.map(p=>`<option value="${p.id}" ${p.id===t.project_id?'selected':''}>${esc(p.name)}</option>`).join('');
-  $('t-ass').innerHTML=`<option value="">— Nessuno —</option>${PROFILES.map(u=>`<option value="${u.id}" ${u.id===t.assignee_id?'selected':''}>${esc(u.full_name)}</option>`).join('')}`;
+function editTask(id) {
+  var t = null;
+  for (var i = 0; i < TASKS.length; i++) { if (TASKS[i].id === id) { t = TASKS[i]; break; } }
+  if (!t) return;
+  EDIT_ID = id;
+  g('mttit').textContent = 'Modifica Task';
+  g('tt-title').value = t.title || ''; g('tt-notes').value = t.notes || '';
+  g('tt-due').value = t.due_date || ''; g('tt-hours').value = t.estimated_hours || '';
+  g('tt-status').value = t.status || 'da_fare'; g('tt-prio').value = t.priority || 'media';
+  var popts = '';
+  for (var j = 0; j < PROJECTS.length; j++) {
+    var sel = PROJECTS[j].id === t.project_id ? ' selected' : '';
+    popts += '<option value="' + PROJECTS[j].id + '"' + sel + '>' + esc(PROJECTS[j].name) + '</option>';
+  }
+  g('tt-proj').innerHTML = popts;
+  var aopts = '<option value="">— Nessuno —</option>';
+  for (var k = 0; k < PROFILES.length; k++) {
+    var asel = PROFILES[k].id === t.assignee_id ? ' selected' : '';
+    aopts += '<option value="' + PROFILES[k].id + '"' + asel + '>' + esc(PROFILES[k].full_name) + '</option>';
+  }
+  g('tt-ass').innerHTML = aopts;
   openM('m-task');
 }
 
-async function saveTask(){
-  const title=$('t-title').value.trim(); if(!title){toast('Titolo obbligatorio','error');return;}
-  setBtn('st-btn',true);
-  const pay={title,project_id:$('t-proj').value,assignee_id:$('t-ass').value||null,status:$('t-status').value,priority:$('t-prio').value,due_date:$('t-due').value||null,estimated_hours:$('t-hours').value||null,notes:$('t-notes').value.trim()||null,created_by:ME.id};
-  const{error}=EDIT_ID?await SB.from('tasks').update(pay).eq('id',EDIT_ID):await SB.from('tasks').insert(pay);
-  setBtn('st-btn',false);
-  if(error){toast(error.message,'error');return;}
-  toast(EDIT_ID?'Task aggiornato':'Task creato','success');
-  closeM('m-task'); rTasks();
+function saveTask() {
+  var title = g('tt-title').value.trim();
+  if (!title) { toast('Titolo obbligatorio', 'error'); return; }
+  setBtn('stbtn', true);
+  var pay = {
+    title: title, project_id: g('tt-proj').value,
+    assignee_id: g('tt-ass').value || null, status: g('tt-status').value,
+    priority: g('tt-prio').value, due_date: g('tt-due').value || null,
+    estimated_hours: g('tt-hours').value || null, notes: g('tt-notes').value.trim() || null,
+    created_by: ME.id
+  };
+  var op = EDIT_ID ? SB.from('tasks').update(pay).eq('id', EDIT_ID) : SB.from('tasks').insert(pay);
+  op.then(function(r) {
+    setBtn('stbtn', false, 'Salva Task');
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    toast(EDIT_ID ? 'Task aggiornato' : 'Task creato', 'success');
+    closeM('m-task'); rTasks();
+  });
 }
 
-async function delTask(id){
-  if(!confirm('Eliminare questo task?')) return;
-  const{error}=await SB.from('tasks').delete().eq('id',id);
-  if(error){toast(error.message,'error');return;}
-  toast('Task eliminato'); rTasks();
+function delTask(id) {
+  if (!confirm('Eliminare questo task?')) return;
+  SB.from('tasks').delete().eq('id', id).then(function(r) {
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    toast('Task eliminato'); rTasks();
+  });
 }
 
 // ── KANBAN ──
-async function rKanban(){
-  $('pg-act').innerHTML=`
-    <select class="btn btn-sm" id="kf" onchange="rKanban()" style="padding:5px 8px">
-      <option value="">Tutti i Progetti</option>
-      ${PROJECTS.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}
-    </select>
-    ${canW()?`<button class="btn btn-p btn-sm" style="margin-left:6px" onclick="openNewTask()">+ Task</button>`:''}`;
-  if(!TASKS.length){const{data}=await SB.from('tasks').select('*');TASKS=data||[];}
-  const pf=$('kf')?.value||'';
-  const list=pf?TASKS.filter(t=>t.project_id===pf):TASKS;
-  const cols=['da_fare','in_corso','revisione','completato'];
-  const lbs={da_fare:'Da Fare',in_corso:'In Corso',revisione:'Revisione',completato:'Completato'};
-  $('content').innerHTML=`<div class="kboard">${cols.map(s=>{
-    const ct=list.filter(t=>t.status===s);
-    return`<div class="kcol">
-      <div class="kcolh"><span class="kcolt">${lbs[s]}</span><span class="kcoln">${ct.length}</span></div>
-      ${ct.map(t=>`<div class="kcard" onclick="editTask('${t.id}')">
-        <div class="flex aic gap8 mb8"><span class="prio ${pcls(t.priority)}" style="margin-top:1px;flex-shrink:0"></span><span class="kcard-t">${esc(t.title)}</span></div>
-        <div class="kcard-m">
-          <span class="kcard-p">${esc(pName(t.project_id))}</span>
-          ${t.due_date?`<span class="kcard-d ${od(t.due_date)?'od':''}">📅 ${fmtD(t.due_date)}</span>`:''}
-        </div>
-        ${t.assignee_id?`<div class="flex aic gap8 mt8"><span class="av" style="width:18px;height:18px;font-size:8px">${ini(uName(t.assignee_id))}</span><span style="font-size:11px;color:var(--muted)">${esc(uName(t.assignee_id))}</span></div>`:''}
-      </div>`).join('')}
-      ${canW()?`<button class="btn btn-sm" style="width:100%;margin-top:4px;justify-content:center;color:var(--muted)" onclick="openNewTask()">+ Aggiungi</button>`:''}
-    </div>`;}).join('')}</div>`;
+function rKanban() {
+  var popts = '<option value="">Tutti i Progetti</option>';
+  for (var x = 0; x < PROJECTS.length; x++) popts += '<option value="' + PROJECTS[x].id + '">' + esc(PROJECTS[x].name) + '</option>';
+  var act = canW() ? '<button class="btn btn-p btn-sm" onclick="openNewTask()" style="margin-left:6px">+ Task</button>' : '';
+  g('pgact').innerHTML = '<select id="kbf" onchange="rKanban()" style="padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px">' + popts + '</select>' + act;
+
+  var pf = g('kbf') ? g('kbf').value : '';
+  var list = [];
+  for (var i = 0; i < TASKS.length; i++) {
+    if (!pf || TASKS[i].project_id === pf) list.push(TASKS[i]);
+  }
+  var cols = ['da_fare','in_corso','revisione','completato'];
+  var clbls = { da_fare:'Da Fare', in_corso:'In Corso', revisione:'Revisione', completato:'Completato' };
+  var html = '<div class="kboard">';
+  for (var c = 0; c < cols.length; c++) {
+    var st = cols[c];
+    var ct = [];
+    for (var t = 0; t < list.length; t++) { if (list[t].status === st) ct.push(list[t]); }
+    html += '<div class="kcol"><div class="kch"><span class="kct">' + clbls[st] + '</span><span class="kcn">' + ct.length + '</span></div>';
+    for (var k = 0; k < ct.length; k++) {
+      var tk = ct[k];
+      var odStyle = isOD(tk.due_date) ? 'color:var(--red);font-weight:600' : 'color:var(--muted)';
+      var assHtml = tk.assignee_id ? ('<div style="display:flex;align-items:center;gap:5px;margin-top:6px"><span class="av" style="width:18px;height:18px;font-size:8px">' + ini(uName(tk.assignee_id)) + '</span><span style="font-size:11px;color:var(--muted)">' + esc(uName(tk.assignee_id)) + '</span></div>') : '';
+      var dueHtml = tk.due_date ? ('<span style="font-size:11px;' + odStyle + '">📅 ' + fmtD(tk.due_date) + '</span>') : '';
+      html += '<div class="kcard" onclick="editTask(\'' + tk.id + '\')">'
+        + '<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:5px"><span class="prio ' + pcls(tk.priority) + '" style="margin-top:4px;flex-shrink:0"></span><span class="kcard-t">' + esc(tk.title) + '</span></div>'
+        + '<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--muted)">' + esc(pName(tk.project_id)) + '</span>' + dueHtml + '</div>'
+        + assHtml + '</div>';
+    }
+    if (canW()) html += '<button class="btn btn-sm" style="width:100%;margin-top:4px;justify-content:center;color:var(--muted)" onclick="openNewTask()">+ Aggiungi</button>';
+    html += '</div>';
+  }
+  html += '</div>';
+  g('content').innerHTML = html;
 }
 
 // ── TIMELINE ──
-async function rTimeline(){
-  if(!PROJECTS.length){const{data}=await SB.from('projects').select('*');PROJECTS=data||[];}
-  const now=new Date(), y=now.getFullYear();
-  const mns=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-  const ref=new Date(y,0,1), total=365;
-  const doff=d=>d?Math.round((new Date(d)-ref)/86400000):null;
-  const pct=d=>{const o=doff(d);return o===null?null:Math.max(0,Math.min(100,o/total*100));};
-  const bar=(s,e)=>{const os=doff(s)||0,oe=doff(e)||os+60;const l=Math.max(0,os/total*100);const w=Math.max(0.5,Math.min(100-l,(oe-os)/total*100));return{l,w};};
-  const wd=PROJECTS.filter(p=>p.start_date||p.end_date);
-  const tp=pct(now.toISOString().split('T')[0]);
-  $('content').innerHTML=`<div class="card">
-    <div class="card-hdr"><span class="card-t">Timeline ${y}</span><span class="muted sm">Linea rossa = oggi</span></div>
-    ${!wd.length?`<div class="empty"><p>Nessun progetto con date. Inserisci le date nei progetti.</p></div>`:`
-    <div class="gw"><div class="ginner">
-      <div class="ghdr">
-        <div class="glc">Progetto</div>
-        <div class="gmo" style="grid-template-columns:repeat(12,1fr)">${mns.map(m=>`<div class="gm">${m}</div>`).join('')}</div>
-      </div>
-      <div style="position:relative">
-        ${wd.map(p=>{const{l,w}=bar(p.start_date,p.end_date);const col=p.status==='completato'?'#198754':p.status==='sospeso'?'#856404':'#2E75B6';return`<div class="grow"><div class="growl">${sbadge(p.status)} ${esc(p.name)}</div><div class="gbars"><div class="gbar" style="left:${l.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}">${esc(p.name)}</div></div></div>`;}).join('')}
-        ${tp!==null?`<div style="position:absolute;top:0;bottom:0;left:calc(240px + (100% - 240px)*${(tp/100).toFixed(4)});width:2px;background:rgba(176,42,55,.75);pointer-events:none;z-index:2"></div>`:''}
-      </div>
-    </div></div>`}
-  </div>`;
+function rTimeline() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var mns = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  var ref = new Date(y, 0, 1);
+  var total = 365;
+  function doff(d) { if (!d) return null; return Math.round((new Date(d) - ref) / 86400000); }
+  function pct(d) { var o = doff(d); return o === null ? null : Math.max(0, Math.min(100, o / total * 100)); }
+  function bar(s, e) {
+    var os = doff(s) || 0, oe = doff(e) || os + 60;
+    var l = Math.max(0, os / total * 100);
+    var w = Math.max(0.5, Math.min(100 - l, (oe - os) / total * 100));
+    return { l: l, w: w };
+  }
+  var wd = [];
+  for (var i = 0; i < PROJECTS.length; i++) { if (PROJECTS[i].start_date || PROJECTS[i].end_date) wd.push(PROJECTS[i]); }
+  var tp = pct(now.toISOString().split('T')[0]);
+  var moHtml = '';
+  for (var m = 0; m < 12; m++) moHtml += '<div class="gm">' + mns[m] + '</div>';
+  var rowHtml = '';
+  for (var p = 0; p < wd.length; p++) {
+    var pr = wd[p];
+    var b = bar(pr.start_date, pr.end_date);
+    var col = pr.status === 'completato' ? '#198754' : pr.status === 'sospeso' ? '#856404' : '#2E75B6';
+    rowHtml += '<div class="grow"><div class="growl">' + sbadge(pr.status) + ' ' + esc(pr.name) + '</div>'
+      + '<div class="gbrs"><div class="gbar" style="left:' + b.l.toFixed(1) + '%;width:' + b.w.toFixed(1) + '%;background:' + col + '">' + esc(pr.name) + '</div></div></div>';
+  }
+  var todayLine = tp !== null ? '<div style="position:absolute;top:0;bottom:0;left:calc(240px + (100% - 240px)*' + (tp/100).toFixed(4) + ');width:2px;background:rgba(176,42,55,.75);pointer-events:none;z-index:2"></div>' : '';
+  if (!wd.length) {
+    g('content').innerHTML = '<div class="card"><div class="empty"><p>Nessun progetto con date.</p></div></div>';
+    return;
+  }
+  g('content').innerHTML = '<div class="card"><div class="ch"><span class="ct">Timeline ' + y + '</span><span style="font-size:12px;color:var(--muted)">Linea rossa = oggi</span></div>'
+    + '<div class="gw"><div class="gi"><div class="ghdr"><div class="glc">Progetto</div><div class="gmc" style="grid-template-columns:repeat(12,1fr)">' + moHtml + '</div></div>'
+    + '<div style="position:relative">' + rowHtml + todayLine + '</div>'
+    + '</div></div></div>';
 }
 
 // ── TIME TRACKING ──
-async function rTime(){
-  $('pg-act').innerHTML=canW()?`<button class="btn btn-p btn-sm" onclick="openTEModal()">+ Registra Ore</button>`:'';
-  const [{data:te},{data:projs}]=await Promise.all([
-    SB.from('time_entries').select('*,projects(name),profiles(full_name)').order('entry_date',{ascending:false}),
+function rTime() {
+  g('pgact').innerHTML = canW() ? '<button class="btn btn-p btn-sm" onclick="openTEModal()">+ Registra Ore</button>' : '';
+  Promise.all([
+    SB.from('time_entries').select('*,projects(name),profiles(full_name)').order('entry_date', { ascending: false }),
     SB.from('projects').select('id,name').order('name')
-  ]);
-  PROJECTS=projs||[];
-  const entries=te||[];
-  const totH=entries.reduce((a,e)=>a+Number(e.hours||0),0);
-  const byP={};
-  entries.forEach(e=>{byP[e.project_id]=(byP[e.project_id]||0)+Number(e.hours||0);});
-  const topP=Object.entries(byP).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  $('content').innerHTML=`
-  <div class="g2 mb16">
-    <div class="kpi"><div class="kpi-l">Ore Totali</div><div class="kpi-v">${totH.toFixed(1)}</div></div>
-    <div class="kpi"><div class="kpi-l">Registrazioni</div><div class="kpi-v">${entries.length}</div></div>
-  </div>
-  <div class="g2">
-    <div class="card">
-      <div class="card-hdr"><span class="card-t">Ore per Progetto</span></div>
-      ${!topP.length?`<div class="empty"><p>Nessuna registrazione</p></div>`
-      :topP.map(([pid,h])=>{const pct=totH?Math.round(h/totH*100):0;return`<div style="margin-bottom:10px"><div class="flex" style="justify-content:space-between;font-size:13px;margin-bottom:3px"><span>${esc(pName(pid))}</span><span class="fw6">${h.toFixed(1)} h</span></div><div class="pb"><div class="pbf" style="width:${pct}%"></div></div></div>`;}).join('')}
-    </div>
-    <div class="card">
-      <div class="card-hdr"><span class="card-t">Registrazioni Recenti</span></div>
-      ${!entries.length?`<div class="empty"><p>Nessuna registrazione</p></div>`
-      :entries.slice(0,12).map(e=>`<div class="flex aic gap8" style="padding:8px 0;border-bottom:1px solid var(--border)">
-        <div style="flex:1;min-width:0">
-          <div class="sm">${esc(e.description||'—')}</div>
-          <div style="font-size:11px;color:var(--muted)">${esc(e.projects?.name||'—')} · ${fmtD(e.entry_date)} · ${esc(e.profiles?.full_name||'—')}</div>
-        </div>
-        <span class="fw6 sm" style="color:var(--navy);flex-shrink:0">${Number(e.hours).toFixed(1)} h</span>
-        ${isAd()?`<button class="btn btn-sm btn-d" onclick="delTE('${e.id}')">✕</button>`:''}
-      </div>`).join('')}
-    </div>
-  </div>`;
+  ]).then(function(res) {
+    var entries = res[0].data || [];
+    PROJECTS = res[1].data || [];
+    var totH = 0;
+    var byP = {};
+    for (var i = 0; i < entries.length; i++) {
+      var h = Number(entries[i].hours || 0);
+      totH += h;
+      var pid = entries[i].project_id;
+      byP[pid] = (byP[pid] || 0) + h;
+    }
+    var topP = [];
+    for (var k in byP) topP.push([k, byP[k]]);
+    topP.sort(function(a, b) { return b[1] - a[1]; });
+    topP = topP.slice(0, 6);
+    var projHtml = '';
+    for (var p = 0; p < topP.length; p++) {
+      var pp = totH ? Math.round(topP[p][1] / totH * 100) : 0;
+      projHtml += '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>' + esc(pName(topP[p][0])) + '</span><span style="font-weight:600">' + topP[p][1].toFixed(1) + ' h</span></div><div class="pb"><div class="pbf" style="width:' + pp + '%"></div></div></div>';
+    }
+    var entHtml = '';
+    var recent = entries.slice(0, 12);
+    for (var e = 0; e < recent.length; e++) {
+      var en = recent[e];
+      var pnm = (en.projects && en.projects.name) ? en.projects.name : '—';
+      var unm = (en.profiles && en.profiles.full_name) ? en.profiles.full_name : '—';
+      var delBtn = isAd() ? '<button class="btn btn-sm btn-d" onclick="delTE(\'' + en.id + '\')">✕</button>' : '';
+      entHtml += '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">'
+        + '<div style="flex:1;min-width:0"><div style="font-size:13px">' + esc(en.description || '—') + '</div>'
+        + '<div style="font-size:11px;color:var(--muted)">' + esc(pnm) + ' · ' + fmtD(en.entry_date) + ' · ' + esc(unm) + '</div></div>'
+        + '<span style="font-weight:600;font-size:13px;color:var(--navy);flex-shrink:0">' + Number(en.hours).toFixed(1) + ' h</span>'
+        + delBtn + '</div>';
+    }
+    g('content').innerHTML = '<div class="g2 mb16" style="margin-bottom:16px">'
+      + '<div class="kpi"><div class="kl">Ore Totali</div><div class="kv">' + totH.toFixed(1) + '</div></div>'
+      + '<div class="kpi"><div class="kl">Registrazioni</div><div class="kv">' + entries.length + '</div></div>'
+      + '</div><div class="g2">'
+      + '<div class="card"><div class="ch"><span class="ct">Ore per Progetto</span></div>' + (projHtml || '<div class="empty"><p>Nessuna registrazione</p></div>') + '</div>'
+      + '<div class="card"><div class="ch"><span class="ct">Registrazioni Recenti</span></div>' + (entHtml || '<div class="empty"><p>Nessuna registrazione</p></div>') + '</div>'
+      + '</div>';
+  });
 }
 
-async function openTEModal(){
-  if(!PROJECTS.length){const{data}=await SB.from('projects').select('id,name').order('name');PROJECTS=data||[];}
-  $('te-proj').innerHTML=PROJECTS.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
-  $('te-task').innerHTML='<option value="">— Nessun task specifico —</option>';
-  $('te-desc').value=''; $('te-date').value=new Date().toISOString().split('T')[0]; $('te-hours').value='';
-  await loadTeTask();
+function openTEModal() {
+  var opts = '';
+  for (var i = 0; i < PROJECTS.length; i++) opts += '<option value="' + PROJECTS[i].id + '">' + esc(PROJECTS[i].name) + '</option>';
+  g('te-proj').innerHTML = opts;
+  g('te-task').innerHTML = '<option value="">— Nessun task specifico —</option>';
+  g('te-desc').value = '';
+  g('te-date').value = new Date().toISOString().split('T')[0];
+  g('te-hours').value = '';
+  loadTeTask();
   openM('m-time');
 }
 
-async function loadTeTask(){
-  const pid=$('te-proj')?.value; if(!pid) return;
-  const{data}=await SB.from('tasks').select('id,title').eq('project_id',pid).neq('status','completato').order('title');
-  $('te-task').innerHTML=`<option value="">— Nessun task specifico —</option>${(data||[]).map(t=>`<option value="${t.id}">${esc(t.title)}</option>`).join('')}`;
+function loadTeTask() {
+  var pid = g('te-proj') ? g('te-proj').value : '';
+  if (!pid) return;
+  SB.from('tasks').select('id,title').eq('project_id', pid).neq('status','completato').order('title').then(function(r) {
+    var opts = '<option value="">— Nessun task specifico —</option>';
+    var data = r.data || [];
+    for (var i = 0; i < data.length; i++) opts += '<option value="' + data[i].id + '">' + esc(data[i].title) + '</option>';
+    g('te-task').innerHTML = opts;
+  });
 }
 
-async function saveTE(){
-  const hours=parseFloat($('te-hours').value), date=$('te-date').value;
-  if(!hours||hours<=0){toast('Ore non valide','error');return;}
-  if(!date){toast('Data obbligatoria','error');return;}
-  setBtn('ste-btn',true);
-  const{error}=await SB.from('time_entries').insert({project_id:$('te-proj').value,task_id:$('te-task').value||null,description:$('te-desc').value.trim()||null,entry_date:date,hours,operator_id:ME.id});
-  setBtn('ste-btn',false);
-  if(error){toast(error.message,'error');return;}
-  toast('Ore registrate','success'); closeM('m-time'); rTime();
+function saveTE() {
+  var hours = parseFloat(g('te-hours').value);
+  var date = g('te-date').value;
+  if (!hours || hours <= 0) { toast('Ore non valide', 'error'); return; }
+  if (!date) { toast('Data obbligatoria', 'error'); return; }
+  setBtn('stebtn', true);
+  SB.from('time_entries').insert({
+    project_id: g('te-proj').value, task_id: g('te-task').value || null,
+    description: g('te-desc').value.trim() || null, entry_date: date,
+    hours: hours, operator_id: ME.id
+  }).then(function(r) {
+    setBtn('stebtn', false, 'Registra');
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    toast('Ore registrate', 'success'); closeM('m-time'); rTime();
+  });
 }
 
-async function delTE(id){
-  if(!confirm('Eliminare questa registrazione?')) return;
-  const{error}=await SB.from('time_entries').delete().eq('id',id);
-  if(error){toast(error.message,'error');return;}
-  toast('Eliminata'); rTime();
+function delTE(id) {
+  if (!confirm('Eliminare questa registrazione?')) return;
+  SB.from('time_entries').delete().eq('id', id).then(function(r) {
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    toast('Eliminata'); rTime();
+  });
 }
 
 // ── FILES ──
-async function rFiles(){
-  const [{data:projs},{data:frecs}]=await Promise.all([
-    SB.from('projects').select('id,name,status').order('name'),
-    SB.from('files').select('*,projects(name),profiles(full_name)').order('created_at',{ascending:false})
-  ]);
-  PROJECTS=projs||[];
-  const files=frecs||[];
-  $('content').innerHTML=`
-  <div class="card mb16">
-    <div class="card-hdr"><span class="card-t">Carica File su Commessa</span></div>
-    ${!canW()?`<div class="muted sm" style="padding:8px 0">Solo Admin e Collaboratori possono caricare file.</div>`:`
-    <div class="fg">
-      <label class="fl">Commessa *</label>
-      <select class="fc" id="up-proj" style="max-width:380px" onchange="updFolderInfo()">
-        <option value="">— Seleziona progetto —</option>
-        ${PROJECTS.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}
-      </select>
-      <div class="fhint" id="fi-info">Seleziona una commessa per abilitare l'upload.</div>
-    </div>
-    <div class="dz" id="dz" onclick="$('fi').click()" ondragover="dov(event)" ondragleave="dol()" ondrop="ddr(event)">
-      <div class="dz-ico">📤</div>
-      <div class="dz-t"><strong>Trascina file qui</strong> o clicca per selezionare<br><span style="font-size:12px">File salvati in Supabase Storage · cartella automatica per commessa</span></div>
-    </div>
-    <input type="file" id="fi" multiple style="display:none" onchange="handleFiles(this.files)">
-    <div id="ul" class="mt12"></div>`}
-  </div>
-  <div class="card">
-    <div class="card-hdr"><span class="card-t">File Caricati</span></div>
-    ${!files.length?`<div class="empty"><div class="empty-i">📁</div><p>Nessun file caricato.</p></div>`:`
-    <div class="tw"><table>
-      <thead><tr><th>Nome File</th><th>Commessa</th><th>Caricato da</th><th>Dimensione</th><th>Data</th><th></th></tr></thead>
-      <tbody>${files.map(f=>`<tr>
-        <td class="fw6">${esc(f.name)}</td>
-        <td class="muted sm">${esc(f.projects?.name||'—')}</td>
-        <td class="sm">${esc(f.profiles?.full_name||'—')}</td>
-        <td class="muted sm">${fmtSz(f.size_bytes)}</td>
-        <td class="muted sm">${fmtD(f.created_at?.split('T')[0])}</td>
-        <td class="ac">
-          <button class="btn btn-sm" onclick="dlFile('${f.storage_path}','${esc(f.name)}')">⬇ Scarica</button>
-          ${isAd()?`<button class="btn btn-sm btn-d" style="margin-left:4px" onclick="delFile('${f.id}','${f.storage_path}')">🗑</button>`:''}
-        </td>
-      </tr>`).join('')}</tbody>
-    </table></div>`}
-  </div>`;
+function rFiles() {
+  Promise.all([
+    SB.from('projects').select('id,name').order('name'),
+    SB.from('files').select('*,projects(name),profiles(full_name)').order('created_at', { ascending: false })
+  ]).then(function(res) {
+    PROJECTS = res[0].data || [];
+    var files = res[1].data || [];
+    var popts = '<option value="">— Seleziona progetto —</option>';
+    for (var i = 0; i < PROJECTS.length; i++) popts += '<option value="' + PROJECTS[i].id + '">' + esc(PROJECTS[i].name) + '</option>';
+    var upHtml = canW() ? '<div class="fg"><label class="fl">Commessa *</label><select class="fc" id="uppj" style="max-width:380px" onchange="updFI()">' + popts + '</select><div style="font-size:11px;color:var(--muted2);margin-top:3px" id="fiinfo">Seleziona una commessa.</div></div>'
+      + '<div class="dz" id="dz" onclick="g(\'ufi\').click()" ondragover="dov(event)" ondragleave="dol()" ondrop="ddr(event)"><div style="font-size:28px;color:var(--muted2);margin-bottom:8px">📤</div><div style="font-size:13px;color:var(--muted);line-height:1.5"><strong>Trascina file qui</strong> o clicca<br><span style="font-size:12px">Cartella automatica per commessa in Supabase Storage</span></div></div>'
+      + '<input type="file" id="ufi" multiple style="display:none" onchange="hFiles(this.files)"><div id="ul" style="margin-top:12px"></div>'
+      : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Solo Admin e Collaboratori possono caricare file.</div>';
+    var frows = '';
+    for (var f = 0; f < files.length; f++) {
+      var fi = files[f];
+      var pnm = (fi.projects && fi.projects.name) ? fi.projects.name : '—';
+      var unm = (fi.profiles && fi.profiles.full_name) ? fi.profiles.full_name : '—';
+      var cat = fi.created_at ? fi.created_at.split('T')[0] : null;
+      var delBtn = isAd() ? ' <button class="btn btn-sm btn-d" onclick="delFile(\'' + fi.id + '\',\'' + fi.storage_path + '\')">🗑</button>' : '';
+      frows += '<tr><td style="font-weight:600">' + esc(fi.name) + '</td><td style="font-size:12px;color:var(--muted)">' + esc(pnm) + '</td><td style="font-size:12px">' + esc(unm) + '</td><td style="font-size:12px;color:var(--muted)">' + fmtSz(fi.size_bytes) + '</td><td style="font-size:12px;color:var(--muted)">' + fmtD(cat) + '</td><td class="ac"><button class="btn btn-sm" onclick="dlFile(\'' + fi.storage_path + '\',\'' + esc(fi.name) + '\')">⬇ Scarica</button>' + delBtn + '</td></tr>';
+    }
+    var ftable = files.length ? '<div class="tw"><table><thead><tr><th>Nome</th><th>Commessa</th><th>Caricato da</th><th>Dimensione</th><th>Data</th><th></th></tr></thead><tbody>' + frows + '</tbody></table></div>' : '<div class="empty"><div class="ei">📁</div><p>Nessun file caricato.</p></div>';
+    g('content').innerHTML = '<div class="card mb16" style="margin-bottom:16px"><div class="ch"><span class="ct">Carica File</span></div>' + upHtml + '</div><div class="card"><div class="ch"><span class="ct">File Caricati</span></div>' + ftable + '</div>';
+  });
 }
 
-function updFolderInfo(){
-  const pid=$('up-proj')?.value, el=$('fi-info'); if(!el) return;
-  if(pid){const p=PROJECTS.find(x=>x.id===pid);el.textContent=`📁 Cartella: commesse/${pid}/ — ${p?.name||''}`;el.style.color='var(--blue)';}
-  else{el.textContent='Seleziona una commessa per abilitare l\'upload.';el.style.color='';}
+function updFI() {
+  var pid = g('uppj') ? g('uppj').value : '';
+  var el = g('fiinfo'); if (!el) return;
+  if (pid) {
+    var pn = '';
+    for (var i = 0; i < PROJECTS.length; i++) { if (PROJECTS[i].id === pid) { pn = PROJECTS[i].name; break; } }
+    el.textContent = '📁 Cartella: commesse/' + pid + '/ — ' + pn;
+    el.style.color = 'var(--blue)';
+  } else {
+    el.textContent = 'Seleziona una commessa.';
+    el.style.color = '';
+  }
 }
 
-function dov(e){e.preventDefault();$('dz').classList.add('ov2');}
-function dol(){$('dz').classList.remove('ov2');}
-function ddr(e){e.preventDefault();dol();handleFiles(e.dataTransfer.files);}
+function dov(e) { e.preventDefault(); var dz = g('dz'); if (dz) dz.style.borderColor = 'var(--blue)'; }
+function dol() { var dz = g('dz'); if (dz) dz.style.borderColor = ''; }
+function ddr(e) { e.preventDefault(); dol(); hFiles(e.dataTransfer.files); }
 
-async function handleFiles(fileList){
-  const pid=$('up-proj')?.value;
-  if(!pid){toast('Seleziona prima una commessa','error');return;}
-  Array.from(fileList).forEach(f=>uploadFile(f,pid));
+function hFiles(fileList) {
+  var pid = g('uppj') ? g('uppj').value : '';
+  if (!pid) { toast('Seleziona prima una commessa', 'error'); return; }
+  for (var i = 0; i < fileList.length; i++) upFile(fileList[i], pid);
 }
 
-async function uploadFile(file,pid){
-  const ul=$('ul'); if(!ul) return;
-  const uid='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-  ul.insertAdjacentHTML('beforeend',`
-    <div class="upi" id="${uid}">
-      <span>📄</span>
-      <div style="flex:1;min-width:0">
-        <div class="upi-n">${esc(file.name)}</div>
-        <div class="uprog"><div class="uprog-f" id="${uid}p" style="width:5%"></div></div>
-      </div>
-      <span class="upi-sz">${fmtSz(file.size)}</span>
-      <span id="${uid}s" class="sm muted">Caricamento…</span>
-    </div>`);
-  const sp=p=>{const e=$(uid+'p');if(e)e.style.width=p+'%';};
-  const ss=(msg,col='var(--muted)')=>{const e=$(uid+'s');if(e){e.textContent=msg;e.style.color=col;}};
-  const path=`${pid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
-  sp(20);
-  const{error}=await SB.storage.from('commesse').upload(path,file,{cacheControl:'3600',upsert:false});
-  if(error){ss('✗ '+error.message,'var(--red)');return;}
-  sp(85);ss('Salvo metadati…');
-  const{error:dbe}=await SB.from('files').insert({project_id:pid,name:file.name,storage_path:path,size_bytes:file.size,mime_type:file.type||null,uploaded_by:ME.id});
-  sp(100);
-  if(dbe){ss('⚠ Caricato ma errore metadati','var(--yellow)');}
-  else{ss('✓ Caricato','var(--green)');toast(`${file.name} caricato`,'success');}
-  setTimeout(()=>rFiles(),1800);
+function upFile(file, pid) {
+  var ul = g('ul'); if (!ul) return;
+  var uid = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  var div = document.createElement('div');
+  div.className = 'upi';
+  div.id = uid;
+  div.innerHTML = '<span>📄</span><div style="flex:1;min-width:0"><div class="upn">' + esc(file.name) + '</div><div class="uprg"><div class="uprgf" id="' + uid + 'p" style="width:5%"></div></div></div><span class="upsz">' + fmtSz(file.size) + '</span><span id="' + uid + 's" style="font-size:12px;color:var(--muted)">Caricamento...</span>';
+  ul.appendChild(div);
+  var path = pid + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  var pb = g(uid + 'p'); if (pb) pb.style.width = '20%';
+  SB.storage.from('commesse').upload(path, file, { cacheControl: '3600', upsert: false }).then(function(r) {
+    if (r.error) {
+      var s = g(uid + 's'); if (s) { s.textContent = '✗ ' + r.error.message; s.style.color = 'var(--red)'; }
+      return;
+    }
+    var pb2 = g(uid + 'p'); if (pb2) pb2.style.width = '80%';
+    var s2 = g(uid + 's'); if (s2) s2.textContent = 'Salvo...';
+    SB.from('files').insert({ project_id: pid, name: file.name, storage_path: path, size_bytes: file.size, mime_type: file.type || null, uploaded_by: ME.id }).then(function(r2) {
+      var pb3 = g(uid + 'p'); if (pb3) pb3.style.width = '100%';
+      var s3 = g(uid + 's');
+      if (r2.error) { if (s3) { s3.textContent = '⚠ Errore metadati'; s3.style.color = 'var(--yellow)'; } }
+      else { if (s3) { s3.textContent = '✓ Caricato'; s3.style.color = 'var(--green)'; } toast(file.name + ' caricato', 'success'); }
+      setTimeout(function() { rFiles(); }, 1800);
+    });
+  });
 }
 
-async function dlFile(path,name){
-  const{data,error}=await SB.storage.from('commesse').createSignedUrl(path,120);
-  if(error){toast(error.message,'error');return;}
-  const a=document.createElement('a');a.href=data.signedUrl;a.download=name;a.click();
+function dlFile(path, name) {
+  SB.storage.from('commesse').createSignedUrl(path, 120).then(function(r) {
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    var a = document.createElement('a'); a.href = r.data.signedUrl; a.download = name; a.click();
+  });
 }
 
-async function delFile(id,path){
-  if(!confirm('Eliminare questo file?')) return;
-  await SB.storage.from('commesse').remove([path]);
-  const{error}=await SB.from('files').delete().eq('id',id);
-  if(error){toast(error.message,'error');return;}
-  toast('File eliminato'); rFiles();
+function delFile(id, path) {
+  if (!confirm('Eliminare questo file?')) return;
+  SB.storage.from('commesse').remove([path]).then(function() {
+    SB.from('files').delete().eq('id', id).then(function(r) {
+      if (r.error) { toast(r.error.message, 'error'); return; }
+      toast('File eliminato'); rFiles();
+    });
+  });
 }
 
 // ── USERS ──
-async function rUsers(){
-  if(!isAd()){$('content').innerHTML=`<div class="card"><div class="empty"><p>Accesso riservato agli amministratori.</p></div></div>`;return;}
-  $('pg-act').innerHTML=`<div class="info-box" style="margin:0;font-size:12px">Per invitare nuovi utenti usa <strong>Supabase Dashboard → Authentication → Users → Invite user</strong>.</div>`;
-  const{data}=await SB.from('profiles').select('*').order('full_name');
-  PROFILES=data||[];
-  const rc=r=>({admin:`<span class="chip chip-a">Admin</span>`,collaboratore:`<span class="chip chip-c">Collaboratore</span>`,viewer:`<span class="chip chip-v">Viewer</span>`}[r]||r);
-  $('content').innerHTML=`<div class="card"><div class="tw"><table>
-    <thead><tr><th>Utente</th><th>Ruolo attuale</th><th>Azioni</th></tr></thead>
-    <tbody>${PROFILES.map(u=>`<tr>
-      <td><div class="flex aic gap8"><span class="av" style="width:30px;height:30px;font-size:11px">${ini(u.full_name)}</span><div><div class="fw6 sm">${esc(u.full_name)}</div>${u.id===ME.id?`<div style="font-size:11px;color:var(--muted)">Tu</div>`:''}</div></div></td>
-      <td>${rc(u.role)}</td>
-      <td class="ac"><button class="btn btn-sm" onclick="openEditUser('${u.id}')" ${u.id===ME.id?'disabled':''}>Cambia Ruolo</button></td>
-    </tr>`).join('')}</tbody>
-  </table></div></div>`;
+function rUsers() {
+  if (!isAd()) { g('content').innerHTML = '<div class="card"><div class="empty"><p>Accesso riservato agli amministratori.</p></div></div>'; return; }
+  g('pgact').innerHTML = '<div class="ibox" style="margin:0;font-size:12px">Per invitare nuovi utenti: <strong>Supabase Dashboard → Authentication → Users → Invite user</strong>. Poi torna qui per assegnare il ruolo.</div>';
+  SB.from('profiles').select('*').order('full_name').then(function(r) {
+    PROFILES = r.data || [];
+    var rows = '';
+    for (var i = 0; i < PROFILES.length; i++) {
+      var u = PROFILES[i];
+      var rc = u.role === 'admin' ? '<span class="chip chip-a">Admin</span>' : u.role === 'collaboratore' ? '<span class="chip chip-c">Collaboratore</span>' : '<span class="chip chip-v">Viewer</span>';
+      var isMe = u.id === ME.id;
+      var btn = isMe ? '<button class="btn btn-sm" disabled>Tu</button>' : '<button class="btn btn-sm" onclick="openEditUser(\'' + u.id + '\')">Cambia Ruolo</button>';
+      rows += '<tr><td><div style="display:flex;align-items:center;gap:8px"><span class="av" style="width:30px;height:30px;font-size:11px">' + ini(u.full_name) + '</span><span style="font-weight:600">' + esc(u.full_name) + '</span></div></td><td>' + rc + '</td><td class="ac">' + btn + '</td></tr>';
+    }
+    g('content').innerHTML = '<div class="card"><div class="tw"><table><thead><tr><th>Utente</th><th>Ruolo</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+  });
 }
 
-function openEditUser(id){
-  const u=PROFILES.find(x=>x.id===id); if(!u) return;
-  EDIT_USER_ID=id;
-  $('u-name-disp').value=u.full_name;
-  $('u-role').value=u.role;
+function openEditUser(id) {
+  var u = null;
+  for (var i = 0; i < PROFILES.length; i++) { if (PROFILES[i].id === id) { u = PROFILES[i]; break; } }
+  if (!u) return;
+  EDIT_UID = id;
+  g('mu-name').value = u.full_name;
+  g('mu-role').value = u.role;
   openM('m-user');
 }
 
-async function saveUserRole(){
-  const role=$('u-role').value;
-  setBtn('su-btn',true);
-  const{error}=await SB.from('profiles').update({role}).eq('id',EDIT_USER_ID);
-  setBtn('su-btn',false);
-  if(error){toast(error.message,'error');return;}
-  toast('Ruolo aggiornato','success');
-  closeM('m-user');
-  const{data}=await SB.from('profiles').select('*').order('full_name');
-  PROFILES=data||[];
-  rUsers();
+function saveUserRole() {
+  var role = g('mu-role').value;
+  setBtn('subtn', true);
+  SB.from('profiles').update({ role: role }).eq('id', EDIT_UID).then(function(r) {
+    setBtn('subtn', false, 'Salva');
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    toast('Ruolo aggiornato', 'success'); closeM('m-user'); rUsers();
+  });
 }
 
 // ── INIT ──
-SB.auth.getSession().then(({data:{session}})=>{
-  if(session) boot();
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var ovs = document.querySelectorAll('.ov.on');
+    for (var i = 0; i < ovs.length; i++) closeM(ovs[i].id);
+  }
 });
-SB.auth.onAuthStateChange((event,session)=>{
-  if(event==='SIGNED_OUT'){ ME=null; PROFILE=null; $('pg-app').classList.remove('on'); $('pg-auth').classList.add('on'); }
-  if(event==='SIGNED_IN'&&session&&!ME) boot();
+document.getElementById('apass').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
 });
-$('apass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.ov.on').forEach(m=>closeM(m.id)); });
+document.querySelectorAll('.ov').forEach(function(el) {
+  el.addEventListener('mousedown', function(e) { if (e.target === el) closeM(el.id); });
+});
+
+SB.auth.getSession().then(function(res) {
+  if (res.data && res.data.session) boot();
+});
+SB.auth.onAuthStateChange(function(event, session) {
+  if (event === 'SIGNED_OUT') {
+    ME = null; PROFILE = null;
+    g('pg-app').classList.remove('on');
+    g('pg-auth').classList.add('on');
+  }
+});
+
+// CSS animation for spinner
+var style = document.createElement('style');
+style.textContent = '@keyframes sp{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
 </script>
 </body>
 </html>
