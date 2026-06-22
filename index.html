@@ -165,6 +165,18 @@ tbody tr:hover td { background: #f0f4f9; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
+/* NOTIFICHE SCADENZA */
+#notif-bar { display: none; background: #fff; border-bottom: 1px solid var(--bord); padding: 0; flex-shrink: 0; max-height: 220px; overflow-y: auto; }
+#notif-bar.show { display: block; }
+.notif-hdr { display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; background: #FFF8E6; border-bottom: 1px solid #FFE0A0; }
+.notif-hdr-t { font-size: 13px; font-weight: 600; color: var(--yel); display: flex; align-items: center; gap: 8px; }
+.notif-item { display: flex; align-items: center; gap: 12px; padding: 8px 24px; border-bottom: 1px solid var(--bord); }
+.notif-item:last-child { border-bottom: none; }
+.notif-item-info { flex: 1; min-width: 0; }
+.notif-item-t { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notif-item-sub { font-size: 11px; color: var(--mut); margin-top: 2px; }
+.notif-scad { color: var(--red); font-weight: 600; font-size: 12px; flex-shrink: 0; }
+.notif-scad-warn { color: var(--ora); font-weight: 600; font-size: 12px; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -244,6 +256,13 @@ tbody tr:hover td { background: #f0f4f9; }
     <div id="top">
       <h2 id="ptitle">Dashboard</h2>
       <div id="top-act"></div>
+    </div>
+        <div id="notif-bar">
+      <div class="notif-hdr">
+        <span class="notif-hdr-t">&#9888; Task in scadenza nei prossimi 2 giorni</span>
+        <button class="btn btn-sm" id="notif-close" style="font-size:11px">Chiudi</button>
+      </div>
+      <div id="notif-list"></div>
     </div>
     <div id="page"><div class="empty"><i>⏳</i><p>Caricamento...</p></div></div>
   </div>
@@ -639,7 +658,15 @@ function boot() {
         var rm = {admin:'Admin', collaboratore:'Collab.', viewer:'Viewer'};
         el('srl').textContent = (PROF && rm[PROF.role]) ? rm[PROF.role] : '';
         el('sn-users').style.display = isAd() ? 'flex' : 'none';
+        // Wire notif close button
+        var ncb = document.getElementById('notif-close');
+        if (ncb) ncb.addEventListener('click', function(){ document.getElementById('notif-bar').classList.remove('show'); });
         go('dashboard');
+        // Load projects cache then check scadenze
+        SB.from('projects').select('id,name').order('name').then(function(rp){
+          PROJS = rp.data || [];
+          checkScadenze();
+        });
       });
     });
   });
@@ -863,7 +890,10 @@ function drawTaskTable(list) {
     var t=list[i];
     var od=isOD(t.due_date);
     var aw=t.assignee_id?('<div style="display:flex;align-items:center;gap:6px">'+avHtml(t.assignee_id,22)+'<span style="font-size:12px">'+esc(un(t.assignee_id))+'</span></div>'):'-';
-    var ab=''; if(canW()){ab='<button class="btn btn-sm et-btn" data-id="'+t.id+'">✏️</button>';if(isAd())ab+=' <button class="btn btn-sm btn-d dt-btn" data-id="'+t.id+'">🗑</button>';}
+    var isRespT = ME && t.responsabile_id === ME.id;
+    var ab='';
+    if (isRespT || isAd()) { ab='<button class="btn btn-sm et-btn" data-id="'+t.id+'">✏️</button>'; }
+    if (isAd()) { ab+=' <button class="btn btn-sm btn-d dt-btn" data-id="'+t.id+'">🗑</button>'; }
     rows+='<tr>'
       +'<td><span class="prdot '+pcls(t.priority)+'"></span></td>'
       +'<td><span style="font-weight:600">'+esc(t.title)+'</span>'+(t.notes?'<div style="font-size:11px;color:var(--mut);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(t.notes)+'</div>':'')+'</td>'
@@ -937,6 +967,18 @@ function editTask(id) {
 
 function saveTask() {
   var title=el('tt-n').value.trim(); if(!title){toast('Titolo obbligatorio','error');return;}
+  // Check permission: only responsabile or admin can save changes
+  var curResp = el('tt-resp').value;
+  // If editing existing task, check original responsabile
+  if (EID) {
+    var origTask = null;
+    for (var tx=0;tx<TSKS.length;tx++){if(TSKS[tx].id===EID){origTask=TSKS[tx];break;}}
+    if (origTask && origTask.responsabile_id && origTask.responsabile_id !== ME.id && !isAd()) {
+      toast('Solo il responsabile del task o un Admin puo modificare questo task.','error');
+      setBtn('st-btn',false,'Salva Task');
+      return;
+    }
+  }
   setLoading('st-btn',true);
   var pay={
     title:title,
@@ -965,6 +1007,7 @@ function saveTask() {
 }
 
 function delTask(id) {
+  if (!isAd()) { toast('Solo un Admin puo eliminare i task.','error'); return; }
   if(!confirm('Eliminare questo task?'))return;
   SB.from('tasks').delete().eq('id',id).then(function(r){if(r.error){toast(r.error.message,'error');return;}toast('Task eliminato');rTasks();});
 }
@@ -1192,6 +1235,114 @@ function saveUserRole(){
   SB.from('profiles').update({role:el('mu-r').value}).eq('id',EUID).then(function(r){
     setLoading('su-btn',false); if(r.error){toast(r.error.message,'error');return;}
     toast('Ruolo aggiornato','success'); closeM('m-user'); rUsers();
+  });
+}
+
+
+// ── NOTIFICHE SCADENZA ──────────────────────────────────────
+
+function checkScadenze() {
+  var now = new Date();
+  var oggi = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var tra2 = new Date(oggi); tra2.setDate(tra2.getDate() + 2);
+
+  SB.from('tasks')
+    .select('*')
+    .neq('status', 'completato')
+    .not('due_date', 'is', null)
+    .lte('due_date', tra2.toISOString().split('T')[0])
+    .order('due_date', {ascending: true})
+    .then(function(r) {
+      var tasks = r.data || [];
+      if (!tasks.length) return;
+
+      // Filter: show only tasks where ME is assignee or responsabile
+      var mine = [];
+      for (var i = 0; i < tasks.length; i++) {
+        var t = tasks[i];
+        if (t.assignee_id === ME.id || t.responsabile_id === ME.id) {
+          mine.push(t);
+        }
+      }
+      if (!mine.length) return;
+
+      var html = '';
+      for (var j = 0; j < mine.length; j++) {
+        var t = mine[j];
+        var dueDate = new Date(t.due_date);
+        var diffDays = Math.round((dueDate - oggi) / 86400000);
+        var scadLabel, scadClass;
+        if (diffDays < 0) {
+          scadLabel = 'Scaduto da ' + Math.abs(diffDays) + ' giorni';
+          scadClass = 'notif-scad';
+        } else if (diffDays === 0) {
+          scadLabel = 'Scade oggi';
+          scadClass = 'notif-scad';
+        } else {
+          scadLabel = 'Scade in ' + diffDays + ' giorni';
+          scadClass = 'notif-scad-warn';
+        }
+
+        var role = '';
+        if (t.assignee_id === ME.id && t.responsabile_id === ME.id) role = 'Esecutore + Responsabile';
+        else if (t.assignee_id === ME.id) role = 'Esecutore';
+        else role = 'Responsabile';
+
+        var projNm = pName(t.project_id);
+
+        html += '<div class="notif-item">'
+          + '<div class="notif-item-info">'
+          + '<div class="notif-item-t">' + esc(t.title) + '</div>'
+          + '<div class="notif-item-sub">' + esc(projNm) + ' &middot; ' + role + '</div>'
+          + '</div>'
+          + '<span class="' + scadClass + '">' + scadLabel + '</span>'
+          + '<button class="btn btn-sm" onclick="inviaPromemoria(' + "'" + t.id + "'" + ')" style="flex-shrink:0">&#128231; Promemoria</button>'
+          + '</div>';
+      }
+
+      var nb = document.getElementById('notif-bar');
+      var nl = document.getElementById('notif-list');
+      if (nb && nl) {
+        nl.innerHTML = html;
+        nb.classList.add('show');
+        // Update header count
+        var hdr = nb.querySelector('.notif-hdr-t');
+        if (hdr) hdr.innerHTML = '&#9888; ' + mine.length + ' task in scadenza (entro 2 giorni)';
+      }
+    });
+}
+
+function inviaPromemoria(tid) {
+  // Find task
+  SB.from('tasks').select('*').eq('id', tid).single().then(function(r) {
+    if (r.error || !r.data) return;
+    var t = r.data;
+    var projNm = pName(t.project_id);
+    var assNm = un(t.assignee_id);
+    var respNm = un(t.responsabile_id);
+    var dueStr = fdate(t.due_date);
+
+    var sogg = encodeURIComponent('[SCS] Promemoria scadenza task: ' + t.title);
+
+    var body = [];
+    body.push('Promemoria scadenza task');
+    body.push('');
+    body.push('TASK: ' + t.title);
+    body.push('PROGETTO: ' + projNm);
+    body.push('SCADENZA: ' + dueStr);
+    body.push('STATO: ' + (t.status || '-'));
+    if (assNm !== '-') body.push('ESECUTORE: ' + assNm);
+    if (respNm !== '-') body.push('RESPONSABILE: ' + respNm);
+    if (t.notes) body.push('NOTE: ' + t.notes);
+    body.push('');
+    body.push('Si prega di verificare lo stato di avanzamento e aggiornare il gestionale.');
+    body.push('');
+    body.push('Studio Tecnico SCS S.r.l. tra Professionisti');
+
+    var NL = String.fromCharCode(10);
+    var bodyText = encodeURIComponent(body.join(NL));
+
+    window.location.href = 'mailto:' + ME.email + '?subject=' + sogg + '&body=' + bodyText;
   });
 }
 
@@ -1552,11 +1703,22 @@ function drawFaseTasks(faseId, tasks) {
     var assNm = t.assignee_nm || '-';
     var od = isOD(t.due_date);
     var approvaBtn = '';
-    if (canW() && t.status !== 'completato' && ME && t.responsabile_id === ME.id) {
+    var editBtn = '';
+    var delBtn = '';
+    var isResp = ME && t.responsabile_id === ME.id;
+    var isAssign = ME && t.assignee_id === ME.id;
+    // Approva: solo il responsabile del task
+    if (t.status !== 'completato' && isResp) {
       approvaBtn = '<button class="btn btn-sm appr-btn" style="background:var(--grnlt);color:var(--grn);border-color:transparent" data-tid="'+t.id+'" data-faseid="'+faseId+'">Approva</button>';
     }
-    var editBtn = canW() ? '<button class="btn btn-sm et-fase-btn" data-id="'+t.id+'">Modifica</button>' : '';
-    var delBtn = isAd() ? '<button class="btn btn-sm btn-d dt-fase-btn" data-id="'+t.id+'">Elimina</button>' : '';
+    // Modifica: responsabile del task o admin
+    if (isResp || isAd()) {
+      editBtn = '<button class="btn btn-sm et-fase-btn" data-id="'+t.id+'">Modifica</button>';
+    }
+    // Elimina: solo admin
+    if (isAd()) {
+      delBtn = '<button class="btn btn-sm btn-d dt-fase-btn" data-id="'+t.id+'">Elimina</button>';
+    }
     rows += '<tr>'
       +'<td><span class="prdot '+pcls(t.priority)+'"></span></td>'
       +'<td style="font-weight:600">'+esc(t.title)+'</td>'
