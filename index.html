@@ -1315,7 +1315,7 @@ function rTime() {
     for(var i=0;i<entries.length;i++){var h=Number(entries[i].hours||0);tot+=h;var pid=entries[i].project_id;byP[pid]=(byP[pid]||0)+h;}
     var topP=[]; for(var k in byP) topP.push([k,byP[k]]); topP.sort(function(a,b){return b[1]-a[1];}); topP=topP.slice(0,6);
     var ph='';
-    for(var p=0;p<topP.length;p++){var pp=tot?Math.round(topP[p][1]/tot*100):0;ph+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>'+esc(pName(topP[p][0]))+'</span><span style="font-weight:600">'+topP[p][1].toFixed(1)+' h</span></div><div class="pb"><div class="pbf" style="width:'+pp+'%"></div></div></div>';}
+    for(var p=0;p<topP.length;p++){var pp=tot?Math.round(topP[p][1]/tot*100):0;ph+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>'+esc(pn(topP[p][0]))+'</span><span style="font-weight:600">'+topP[p][1].toFixed(1)+' h</span></div><div class="pb"><div class="pbf" style="width:'+pp+'%"></div></div></div>';}
     var totPrev=0, totEff=0;
     var trows='';
     var oggiStr=new Date().toISOString().split('T')[0];
@@ -1338,7 +1338,7 @@ function rTime() {
       }
       trows+='<tr>'
         +'<td style="font-size:12px;font-weight:500">'+esc(tk.title)+'</td>'
-        +'<td style="font-size:12px;color:var(--mut)">'+esc(pName(tk.project_id))+'</td>'
+        +'<td style="font-size:12px;color:var(--mut)">'+esc(pn(tk.project_id))+'</td>'
         +'<td style="font-size:12px;color:var(--mut)">'+esc(un(tk.responsabile_id))+'</td>'
         +'<td>'+bdg(tk.status)+'</td>'
         +'<td style="font-size:12px;text-align:center;color:var(--navy)">'+(prev?prev.toFixed(1)+' h':'-')+'</td>'
@@ -1567,7 +1567,7 @@ function checkScadenze() {
         else if (t.assignee_id === ME.id) role = 'Esecutore';
         else role = 'Responsabile';
 
-        var projNm = pName(t.project_id);
+        var projNm = pn(t.project_id);
 
         html += '<div class="notif-item">'
           + '<div class="notif-item-info">'
@@ -1596,7 +1596,7 @@ function inviaPromemoria(tid) {
   SB.from('tasks').select('*').eq('id', tid).single().then(function(r) {
     if (r.error || !r.data) return;
     var t = r.data;
-    var projNm = pName(t.project_id);
+    var projNm = pn(t.project_id);
     var assNm = un(t.assignee_id);
     var respNm = un(t.responsabile_id);
     var dueStr = fdate(t.due_date);
