@@ -200,7 +200,7 @@ tbody tr:hover td { background: #f0f4f9; }
       <div class="fg"><label class="fl">Password *</label><input class="fc" type="password" id="rpass" placeholder="Minimo 6 caratteri"></div>
       <div class="fg"><label class="fl">Conferma Password *</label><input class="fc" type="password" id="rpass2" placeholder="Ripeti la password"></div>
       <button class="btn btn-p btn-full" id="rbtn">Registrati</button>
-      <p style="text-align:center;margin-top:10px"><a href="#" id="rbacklink" style="font-size:12px;color:var(--mut)">← Torna al login</a></p>
+      <p style="text-align:center;margin-top:10px"><a href="#" id="rbacklink" style="font-size:12px;color:var(--mut)">&lt;- Torna al login</a></p>
     </div>
   </div>
 </div>
@@ -229,6 +229,7 @@ tbody tr:hover td { background: #f0f4f9; }
       <span class="slbl">Gestione</span>
       <button class="sn" data-page="time"><span class="snic">◷</span>Time Tracking</button>
       <button class="sn" data-page="files"><span class="snic">📁</span>File Commesse</button>
+      <button class="sn" data-page="fasi"><span class="snic">📐</span>Fasi Progettazione</button>
     </div>
     <div class="ssec">
       <span class="slbl">Admin</span>
@@ -350,7 +351,7 @@ tbody tr:hover td { background: #f0f4f9; }
   <div class="modal modal-sm">
     <div class="mh"><h3>Modifica Ruolo</h3><button class="mx" data-close="m-user">✕</button></div>
     <div class="mb">
-      <div class="ibox">Per invitare nuovi utenti usa Supabase Dashboard → Authentication → Users → Invite user.</div>
+      <div class="ibox">Per invitare nuovi utenti usa Supabase Dashboard -&gt; Authentication -&gt; Users -&gt; Invite user.</div>
       <div class="fg"><label class="fl">Utente</label><input class="fc" id="mu-n" disabled></div>
       <div class="fg"><label class="fl">Ruolo</label>
         <select class="fc" id="mu-r">
@@ -368,6 +369,53 @@ tbody tr:hover td { background: #f0f4f9; }
 </div>
 
 <div id="tc"></div>
+
+<!-- MODAL FASE -->
+<div class="ov" id="m-fase">
+  <div class="modal">
+    <div class="mh"><h3 id="mf-t">Gestione Fasi</h3><button class="mx" data-close="m-fase">&#x2715;</button></div>
+    <div class="mb">
+      <div id="mf-body"></div>
+    </div>
+    <div class="mf">
+      <button class="btn" data-close="m-fase">Chiudi</button>
+      <button class="btn btn-p" id="sf-btn">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SOTTOFASE -->
+<div class="ov" id="m-sf">
+  <div class="modal modal-sm">
+    <div class="mh"><h3 id="msf-t">Sottofase</h3><button class="mx" data-close="m-sf">&#x2715;</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Stato</label>
+        <select class="fc" id="sf-stato">
+          <option value="non_avviata">Non Avviata</option>
+          <option value="in_corso">In Corso</option>
+          <option value="completata">Completata</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Responsabile</label><select class="fc" id="sf-resp"></select></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Data Inizio</label><input type="date" class="fc" id="sf-di"></div>
+        <div class="fg"><label class="fl">Data Fine Prevista</label><input type="date" class="fc" id="sf-df"></div>
+      </div>
+      <div class="fg"><label class="fl">Attiva per questo progetto</label>
+        <select class="fc" id="sf-attiva">
+          <option value="1">Si</option>
+          <option value="0">No (non applicabile)</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Note</label><textarea class="fc" id="sf-note" rows="3"></textarea></div>
+      <div id="sf-notif-box" style="display:none;margin-top:8px"></div>
+    </div>
+    <div class="mf">
+      <button class="btn" data-close="m-sf">Annulla</button>
+      <button class="btn btn-p" id="ssf-btn">Salva Sottofase</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // CONFIG
@@ -391,16 +439,16 @@ function ini(n) {
   return r.toUpperCase();
 }
 function fdate(d) {
-  if (!d) return '—';
+  if (!d) return '-';
   var s = String(d).split('T')[0].split('-');
   return s.length === 3 ? s[2]+'/'+s[1]+'/'+s[0] : d;
 }
 function feuro(n) {
-  if (n == null || n === '') return '—';
+  if (n == null || n === '') return '-';
   return Number(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 }
 function fsize(b) {
-  if (!b) return '—';
+  if (!b) return '-';
   if (b < 1024) return b+' B';
   if (b < 1048576) return (b/1024).toFixed(1)+' KB';
   if (b < 1073741824) return (b/1048576).toFixed(1)+' MB';
@@ -411,8 +459,8 @@ function isOD(d) {
   var dt = new Date(d), now = new Date();
   return dt < now && dt.toDateString() !== now.toDateString();
 }
-function pn(id) { for (var i=0;i<PROJS.length;i++) { if(PROJS[i].id===id) return PROJS[i].name; } return '—'; }
-function un(id) { for (var i=0;i<PROFS.length;i++) { if(PROFS[i].id===id) return PROFS[i].full_name; } return '—'; }
+function pn(id) { for (var i=0;i<PROJS.length;i++) { if(PROJS[i].id===id) return PROJS[i].name; } return '-'; }
+function un(id) { for (var i=0;i<PROFS.length;i++) { if(PROFS[i].id===id) return PROFS[i].full_name; } return '-'; }
 function canW() { return PROF && (PROF.role==='admin'||PROF.role==='collaboratore'); }
 function isAd() { return PROF && PROF.role==='admin'; }
 
@@ -600,7 +648,7 @@ function go(page) {
     navs[i].classList.remove('on');
     if (navs[i].getAttribute('data-page')===page) navs[i].classList.add('on');
   }
-  var titles = {dashboard:'Dashboard',projects:'Progetti',tasks:'Task',kanban:'Kanban Board',timeline:'Timeline Gantt',time:'Time Tracking',files:'File Commesse',users:'Gestione Utenti'};
+  var titles = {dashboard:'Dashboard',projects:'Progetti',tasks:'Task',kanban:'Kanban Board',timeline:'Timeline Gantt',time:'Time Tracking',files:'File Commesse',fasi:'Fasi Progettazione',users:'Gestione Utenti'};
   el('ptitle').textContent = titles[page] || page;
   el('top-act').innerHTML = '';
   if (page==='dashboard') rDash();
@@ -610,6 +658,7 @@ function go(page) {
   else if (page==='timeline') rTimeline();
   else if (page==='time') rTime();
   else if (page==='files') rFiles();
+  else if (page==='fasi') rFasi();
   else if (page==='users') rUsers();
 }
 
@@ -679,7 +728,7 @@ function rDash() {
         prh+='<div style="padding:8px 0;border-bottom:1px solid var(--bord)">'
           +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
           +'<span style="font-size:13px;font-weight:600">'+esc(pr.name)+'</span>'+bdg(pr.status)+'</div>'
-          +'<div style="font-size:11px;color:var(--mut);margin-bottom:4px">'+esc(pr.client||'—')+' · '+pt+' task</div>'
+          +'<div style="font-size:11px;color:var(--mut);margin-bottom:4px">'+esc(pr.client||'-')+' · '+pt+' task</div>'
           +'<div class="pb"><div class="pbf" style="width:'+pp+'%"></div></div></div>';
       }
     }
@@ -691,8 +740,8 @@ function rDash() {
       +'<div class="kpi"><div class="kpi-l">Ore Registrate</div><div class="kpi-v">'+tot.toFixed(1)+'</div><div class="kpi-s">'+mH.toFixed(1)+' h questo mese</div><div class="kbar"><div class="kfill" style="width:'+p4+'%;background:var(--yel)"></div></div></div>'
       +'</div>'
       +'<div class="g2">'
-      +'<div class="card"><div class="card-h"><span class="card-t">Task Aperti</span><button class="btn btn-sm" id="d-go-t">Tutti →</button></div>'+oth+'</div>'
-      +'<div class="card"><div class="card-h"><span class="card-t">Progetti Recenti</span><button class="btn btn-sm" id="d-go-p">Tutti →</button></div>'+prh+'</div>'
+      +'<div class="card"><div class="card-h"><span class="card-t">Task Aperti</span><button class="btn btn-sm" id="d-go-t">Tutti -&gt;</button></div>'+oth+'</div>'
+      +'<div class="card"><div class="card-h"><span class="card-t">Progetti Recenti</span><button class="btn btn-sm" id="d-go-p">Tutti -&gt;</button></div>'+prh+'</div>'
       +'</div>';
     el('d-go-t').addEventListener('click', function(){ go('tasks'); });
     el('d-go-p').addEventListener('click', function(){ go('projects'); });
@@ -718,12 +767,12 @@ function drawProjTable(list) {
     var p=list[i], pt=0,pd=0;
     for (var j=0;j<TSKS.length;j++) { if(TSKS[j].project_id===p.id){pt++;if(TSKS[j].status==='completato')pd++;} }
     var pc=pt?Math.round(pd/pt*100):0;
-    var ow=p.owner_id?('<div style="display:flex;align-items:center;gap:6px">'+avHtml(p.owner_id,22)+'<span style="font-size:12px">'+esc(un(p.owner_id))+'</span></div>'):'—';
+    var ow=p.owner_id?('<div style="display:flex;align-items:center;gap:6px">'+avHtml(p.owner_id,22)+'<span style="font-size:12px">'+esc(un(p.owner_id))+'</span></div>'):'-';
     var ab='';
     if (canW()) { ab='<button class="btn btn-sm ep-btn" data-id="'+p.id+'">✏️</button>'; if(isAd()) ab+=' <button class="btn btn-sm btn-d dp-btn" data-id="'+p.id+'">🗑</button>'; }
     rows+='<tr>'
       +'<td><span style="font-weight:600">'+esc(p.name)+'</span>'+(p.cig?'<div style="font-size:11px;color:var(--mut)">CIG: '+esc(p.cig)+'</div>':'')+'</td>'
-      +'<td style="font-size:12px;color:var(--mut)">'+esc(p.client||'—')+'</td>'
+      +'<td style="font-size:12px;color:var(--mut)">'+esc(p.client||'-')+'</td>'
       +'<td>'+ow+'</td>'
       +'<td>'+bdg(p.status)+'</td>'
       +'<td style="font-size:12px;color:var(--mut)">'+fdate(p.start_date)+'</td>'
@@ -748,7 +797,7 @@ function fProjs(q) {
 }
 
 function fillOwnerSel(selId, selVal) {
-  var opts='<option value="">— Nessuno —</option>';
+  var opts='<option value="">- Nessuno -</option>';
   for (var i=0;i<PROFS.length;i++) { opts+='<option value="'+PROFS[i].id+'"'+(PROFS[i].id===selVal?' selected':'')+'>'+esc(PROFS[i].full_name)+'</option>'; }
   el(selId).innerHTML=opts;
 }
@@ -809,7 +858,7 @@ function drawTaskTable(list) {
   for(var i=0;i<list.length;i++){
     var t=list[i];
     var od=isOD(t.due_date);
-    var aw=t.assignee_id?('<div style="display:flex;align-items:center;gap:6px">'+avHtml(t.assignee_id,22)+'<span style="font-size:12px">'+esc(un(t.assignee_id))+'</span></div>'):'—';
+    var aw=t.assignee_id?('<div style="display:flex;align-items:center;gap:6px">'+avHtml(t.assignee_id,22)+'<span style="font-size:12px">'+esc(un(t.assignee_id))+'</span></div>'):'-';
     var ab=''; if(canW()){ab='<button class="btn btn-sm et-btn" data-id="'+t.id+'">✏️</button>';if(isAd())ab+=' <button class="btn btn-sm btn-d dt-btn" data-id="'+t.id+'">🗑</button>';}
     rows+='<tr>'
       +'<td><span class="prdot '+pcls(t.priority)+'"></span></td>'
@@ -818,7 +867,7 @@ function drawTaskTable(list) {
       +'<td>'+aw+'</td>'
       +'<td>'+bdg(t.status)+'</td>'
       +'<td style="font-size:12px;color:'+(od?'var(--red)':'var(--mut)')+(od?';font-weight:600':'')+'">'+fdate(t.due_date)+(od?' ⚠':'')+'</td>'
-      +'<td style="font-size:12px;color:var(--mut);text-align:center">'+(t.estimated_hours||'—')+'</td>'
+      +'<td style="font-size:12px;color:var(--mut);text-align:center">'+(t.estimated_hours||'-')+'</td>'
       +(canW()?'<td class="ac">'+ab+'</td>':'')
       +'</tr>';
   }
@@ -846,7 +895,7 @@ function fillProjSel(selId,selVal){
   el(selId).innerHTML=opts;
 }
 function fillUserSel(selId,selVal){
-  var opts='<option value="">— Nessuno —</option>';
+  var opts='<option value="">- Nessuno -</option>';
   for(var i=0;i<PROFS.length;i++){opts+='<option value="'+PROFS[i].id+'"'+(PROFS[i].id===selVal?' selected':'')+'>'+esc(PROFS[i].full_name)+'</option>';}
   el(selId).innerHTML=opts;
 }
@@ -958,11 +1007,11 @@ function rTime() {
     var eh=''; var rec=entries.slice(0,12);
     for(var e=0;e<rec.length;e++){
       var en=rec[e];
-      var pnm=(en.projects&&en.projects.name)?en.projects.name:'—';
-      var unm=(en.profiles&&en.profiles.full_name)?en.profiles.full_name:'—';
+      var pnm=(en.projects&&en.projects.name)?en.projects.name:'-';
+      var unm=(en.profiles&&en.profiles.full_name)?en.profiles.full_name:'-';
       var db=isAd()?'<button class="btn btn-sm btn-d dte-btn" data-id="'+en.id+'" style="margin-left:6px">✕</button>':'';
       eh+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bord)">'
-        +'<div style="flex:1;min-width:0"><div style="font-size:13px">'+esc(en.description||'—')+'</div>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:13px">'+esc(en.description||'-')+'</div>'
         +'<div style="font-size:11px;color:var(--mut)">'+esc(pnm)+' · '+fdate(en.entry_date)+' · '+esc(unm)+'</div></div>'
         +'<span style="font-weight:600;font-size:13px;color:var(--navy);flex-shrink:0">'+Number(en.hours).toFixed(1)+' h</span>'+db+'</div>';
     }
@@ -975,14 +1024,14 @@ function rTime() {
 
 function openTEModal(){
   var opts=''; for(var i=0;i<PROJS.length;i++) opts+='<option value="'+PROJS[i].id+'">'+esc(PROJS[i].name)+'</option>';
-  el('te-p').innerHTML=opts; el('te-t').innerHTML='<option value="">— Nessun task —</option>';
+  el('te-p').innerHTML=opts; el('te-t').innerHTML='<option value="">- Nessun task -</option>';
   el('te-d').value=''; el('te-dt').value=new Date().toISOString().split('T')[0]; el('te-h').value='';
   loadTeTask(); openM('m-time');
 }
 function loadTeTask(){
   var pid=el('te-p')?el('te-p').value:''; if(!pid)return;
   SB.from('tasks').select('id,title').eq('project_id',pid).neq('status','completato').order('title').then(function(r){
-    var opts='<option value="">— Nessun task —</option>';
+    var opts='<option value="">- Nessun task -</option>';
     var d=r.data||[]; for(var i=0;i<d.length;i++) opts+='<option value="'+d[i].id+'">'+esc(d[i].title)+'</option>';
     el('te-t').innerHTML=opts;
   });
@@ -1005,7 +1054,7 @@ function delTE(id){
 function rFiles(){
   Promise.all([SB.from('projects').select('id,name').order('name'),SB.from('files').select('*,projects(name),profiles(full_name)').order('created_at',{ascending:false})]).then(function(rs){
     PROJS=rs[0].data||[]; var files=rs[1].data||[];
-    var popts='<option value="">— Seleziona progetto —</option>';
+    var popts='<option value="">- Seleziona progetto -</option>';
     for(var i=0;i<PROJS.length;i++) popts+='<option value="'+PROJS[i].id+'">'+esc(PROJS[i].name)+'</option>';
     var upHtml=canW()?'<div class="fg"><label class="fl">Commessa *</label><select class="fc" id="uppj" style="max-width:380px">'+popts+'</select><div style="font-size:11px;color:var(--mut2);margin-top:3px" id="fiinfo">Seleziona una commessa.</div></div>'
       +'<div class="dz" id="dz"><div style="font-size:28px;color:var(--mut2);margin-bottom:8px">📤</div><div style="font-size:13px;color:var(--mut);line-height:1.5"><strong>Trascina file qui</strong> o clicca per selezionare<br><span style="font-size:12px">Cartella automatica per commessa in Supabase Storage</span></div></div>'
@@ -1014,8 +1063,8 @@ function rFiles(){
     var frows='';
     for(var f=0;f<files.length;f++){
       var fi=files[f];
-      var fpnm=(fi.projects&&fi.projects.name)?fi.projects.name:'—';
-      var funm=(fi.profiles&&fi.profiles.full_name)?fi.profiles.full_name:'—';
+      var fpnm=(fi.projects&&fi.projects.name)?fi.projects.name:'-';
+      var funm=(fi.profiles&&fi.profiles.full_name)?fi.profiles.full_name:'-';
       var fdt=fi.created_at?fi.created_at.split('T')[0]:null;
       var fdb=isAd()?'<button class="btn btn-sm btn-d df-btn" data-id="'+fi.id+'" data-path="'+esc(fi.storage_path)+'" style="margin-left:4px">🗑</button>':'';
       frows+='<tr><td style="font-weight:600">'+esc(fi.name)+'</td><td style="font-size:12px;color:var(--mut)">'+esc(fpnm)+'</td><td style="font-size:12px">'+esc(funm)+'</td><td style="font-size:12px;color:var(--mut)">'+fsize(fi.size_bytes)+'</td><td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td><td class="ac"><button class="btn btn-sm dlf-btn" data-path="'+esc(fi.storage_path)+'" data-name="'+esc(fi.name)+'">⬇</button>'+fdb+'</td></tr>';
@@ -1025,7 +1074,7 @@ function rFiles(){
     if(canW()){
       el('uppj').addEventListener('change',function(){
         var pid=this.value,ei=el('fiinfo'); if(!ei)return;
-        if(pid){var pnm='';for(var i=0;i<PROJS.length;i++){if(PROJS[i].id===pid){pnm=PROJS[i].name;break;}}ei.textContent='📁 Cartella: commesse/'+pid+'/ — '+pnm;ei.style.color='var(--blue)';}
+        if(pid){var pnm='';for(var i=0;i<PROJS.length;i++){if(PROJS[i].id===pid){pnm=PROJS[i].name;break;}}ei.textContent='📁 Cartella: commesse/'+pid+'/ - '+pnm;ei.style.color='var(--blue)';}
         else{ei.textContent='Seleziona una commessa.';ei.style.color='';}
       });
       el('dz').addEventListener('click',function(){el('ufi').click();});
@@ -1079,7 +1128,7 @@ function delFile(id,path){
 // USERS
 function rUsers(){
   if(!isAd()){el('page').innerHTML='<div class="card"><div class="empty"><p>Accesso riservato agli amministratori.</p></div></div>';return;}
-  el('top-act').innerHTML='<div class="ibox" style="margin:0;font-size:12px">Per invitare nuovi utenti: <strong>Supabase Dashboard → Authentication → Users → Invite user</strong>. Poi torna qui per assegnare il ruolo.</div>';
+  el('top-act').innerHTML='<div class="ibox" style="margin:0;font-size:12px">Per invitare nuovi utenti: <strong>Supabase Dashboard -&gt; Authentication -&gt; Users -&gt; Invite user</strong>. Poi torna qui per assegnare il ruolo.</div>';
   SB.from('profiles').select('*').order('full_name').then(function(r){
     PROFS=r.data||[];
     var rows='';
@@ -1104,6 +1153,421 @@ function saveUserRole(){
     toast('Ruolo aggiornato','success'); closeM('m-user'); rUsers();
   });
 }
+
+// ── FASI PROGETTAZIONE ──────────────────────────────────────
+
+var FASI_LABELS = {preliminare:'Preliminare', definitivo:'Definitivo', esecutivo:'Esecutivo'};
+var FASI_ORDER = ['preliminare','definitivo','esecutivo'];
+var DISC_LABELS = {struttura:'Struttura', architettura:'Architettura', mep:'Impianti MEP', geologia:'Geologia', paesaggio:'Paesaggio', sicurezza:'Sicurezza'};
+var DISC_ORDER = ['struttura','architettura','mep','geologia','paesaggio','sicurezza'];
+var STATO_LABELS = {non_avviata:'Non Avviata', in_corso:'In Corso', completata:'Completata'};
+var STATO_COLORS = {non_avviata:'bgr', in_corso:'bb', completata:'bg'};
+var SF_EDIT_ID = null;
+var SF_FASE_ID = null;
+var SF_PROJ_ID = null;
+var SF_DISC = null;
+
+function rFasi() {
+  if (canW()) {
+    el('top-act').innerHTML = '<select id="fp-sel" style="padding:6px 8px;border:1px solid var(--bord2);border-radius:6px;font-size:13px"><option value="">Seleziona progetto...</option></select>';
+    SB.from('projects').select('id,name').eq('status','attivo').order('name').then(function(r) {
+      var opts = '<option value="">Seleziona progetto...</option>';
+      var d = r.data || [];
+      for (var i = 0; i < d.length; i++) opts += '<option value="'+d[i].id+'">'+esc(d[i].name)+'</option>';
+      el('fp-sel').innerHTML = opts;
+      el('fp-sel').addEventListener('change', function() { if(this.value) loadFasiProgetto(this.value); else el('page').innerHTML='<div class="empty"><i>&#128208;</i><p>Seleziona un progetto per gestire le fasi.</p></div>'; });
+    });
+  } else {
+    el('top-act').innerHTML = '<select id="fp-sel" style="padding:6px 8px;border:1px solid var(--bord2);border-radius:6px;font-size:13px"><option value="">Seleziona progetto...</option></select>';
+    SB.from('projects').select('id,name').order('name').then(function(r) {
+      var opts = '<option value="">Seleziona progetto...</option>';
+      var d = r.data || [];
+      for (var i = 0; i < d.length; i++) opts += '<option value="'+d[i].id+'">'+esc(d[i].name)+'</option>';
+      el('fp-sel').innerHTML = opts;
+      el('fp-sel').addEventListener('change', function() { if(this.value) loadFasiProgetto(this.value); });
+    });
+  }
+  el('page').innerHTML = '<div class="empty"><i>&#128208;</i><p>Seleziona un progetto per gestire le fasi di progettazione.</p></div>';
+}
+
+function loadFasiProgetto(pid) {
+  SF_PROJ_ID = pid;
+  el('page').innerHTML = '<div class="empty"><i>&#9203;</i><p>Caricamento...</p></div>';
+  Promise.all([
+    SB.from('project_fasi').select('*').eq('project_id', pid).order('fase'),
+    SB.from('project_sottofasi').select('*,profiles(full_name,id)').eq('project_id', pid),
+    SB.from('projects').select('id,name').eq('id', pid).single(),
+    SB.from('profiles').select('id,full_name').order('full_name')
+  ]).then(function(rs) {
+    var fasi = rs[0].data || [];
+    var sottofasi = rs[1].data || [];
+    var proj = rs[2].data;
+    PROFS = rs[3].data || [];
+
+    // If no fasi exist yet, create them
+    if (!fasi.length) {
+      initFasiProgetto(pid, proj);
+      return;
+    }
+    drawFasi(proj, fasi, sottofasi);
+  });
+}
+
+function initFasiProgetto(pid, proj) {
+  // Create 3 fasi + 6 sottofasi each
+  var fasiToInsert = [];
+  for (var f = 0; f < FASI_ORDER.length; f++) {
+    fasiToInsert.push({project_id: pid, fase: FASI_ORDER[f], stato: 'non_avviata', created_by: ME.id});
+  }
+  SB.from('project_fasi').insert(fasiToInsert).select().then(function(r) {
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    var fasi = r.data;
+    var sfToInsert = [];
+    for (var i = 0; i < fasi.length; i++) {
+      for (var j = 0; j < DISC_ORDER.length; j++) {
+        sfToInsert.push({fase_id: fasi[i].id, project_id: pid, disciplina: DISC_ORDER[j], attiva: true, stato: 'non_avviata'});
+      }
+    }
+    SB.from('project_sottofasi').insert(sfToInsert).then(function(r2) {
+      if (r2.error) { toast(r2.error.message, 'error'); return; }
+      loadFasiProgetto(pid);
+    });
+  });
+}
+
+function drawFasi(proj, fasi, sottofasi) {
+  var html = '<div style="margin-bottom:16px"><h3 style="font-size:15px;font-weight:600;color:var(--navy)">'+esc(proj.name)+'</h3><p style="font-size:12px;color:var(--mut);margin-top:4px">Fasi di progettazione: Preliminare &#8594; Definitivo &#8594; Esecutivo</p></div>';
+
+  for (var f = 0; f < FASI_ORDER.length; f++) {
+    var ft = FASI_ORDER[f];
+    var fase = null;
+    for (var x = 0; x < fasi.length; x++) { if(fasi[x].fase === ft) { fase = fasi[x]; break; } }
+    if (!fase) continue;
+
+    var sfList = [];
+    for (var y = 0; y < sottofasi.length; y++) { if(sottofasi[y].fase_id === fase.id) sfList.push(sottofasi[y]); }
+
+    // Count progress
+    var attive = 0, compl = 0;
+    for (var s = 0; s < sfList.length; s++) { if(sfList[s].attiva){attive++;if(sfList[s].stato==='completata')compl++;} }
+    var pct = attive ? Math.round(compl/attive*100) : 0;
+
+    var faseColor = fase.stato==='completata'?'var(--grn)':fase.stato==='in_corso'?'var(--blue)':'var(--mut2)';
+    var faseBorderColor = fase.stato==='completata'?'var(--grn)':fase.stato==='in_corso'?'var(--blue)':'var(--bord)';
+
+    html += '<div class="card mb16" style="border-left:4px solid '+faseBorderColor+'">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
+    html += '<div style="display:flex;align-items:center;gap:12px">';
+    html += '<span style="font-size:16px;font-weight:700;color:'+faseColor+'">'+FASI_LABELS[ft]+'</span>';
+    html += '<span class="bdg '+STATO_COLORS[fase.stato]+'">'+STATO_LABELS[fase.stato]+'</span>';
+    html += '</div>';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-size:12px;color:var(--mut)">'+compl+'/'+attive+' completate</span>';
+    if (canW()) html += '<button class="btn btn-sm ef-btn" data-fid="'+fase.id+'" data-ft="'+ft+'">Modifica Fase</button>';
+    html += '</div></div>';
+
+    // Progress bar
+    html += '<div class="pb mb16"><div class="pbf" style="width:'+pct+'%;background:'+faseColor+'"></div></div>';
+
+    // Sottofasi table
+    html += '<div class="tw"><table><thead><tr><th>Disciplina</th><th>Stato</th><th>Responsabile</th><th>Inizio</th><th>Fine Prev.</th><th>Attiva</th>';
+    if (canW()) html += '<th></th>';
+    html += '</tr></thead><tbody>';
+
+    for (var d = 0; d < DISC_ORDER.length; d++) {
+      var disc = DISC_ORDER[d];
+      var sf = null;
+      for (var z = 0; z < sfList.length; z++) { if(sfList[z].disciplina===disc){sf=sfList[z];break;} }
+      if (!sf) continue;
+
+      var rowOpacity = sf.attiva ? '' : 'opacity:.45;';
+      var respNm = (sf.profiles && sf.profiles.full_name) ? sf.profiles.full_name : '-';
+      var notifBtn = '';
+      if (sf.stato === 'completata' && canW()) {
+        notifBtn = '<button class="btn btn-sm notif-btn" data-sfid="'+sf.id+'" style="background:var(--grnlt);color:var(--grn);border-color:transparent;margin-left:4px">&#128231; Notifica</button>';
+      }
+      var editBtn = canW() ? '<button class="btn btn-sm esf-btn" data-sfid="'+sf.id+'" data-faseid="'+fase.id+'" data-disc="'+disc+'" data-ftype="'+ft+'">&#9999;&#65039;</button>' + notifBtn : '';
+
+      html += '<tr style="'+rowOpacity+'">';
+      html += '<td><span style="font-weight:600">'+DISC_LABELS[disc]+'</span></td>';
+      html += '<td>'+bdg(sf.stato)+'</td>';
+      html += '<td style="font-size:12px;color:var(--mut)">'+esc(respNm)+'</td>';
+      html += '<td style="font-size:12px;color:var(--mut)">'+fdate(sf.data_inizio)+'</td>';
+      html += '<td style="font-size:12px;color:'+(isOD(sf.data_fine_prevista)?'var(--red)':'var(--mut)')+'">'+fdate(sf.data_fine_prevista)+'</td>';
+      html += '<td style="text-align:center"><span style="font-size:12px;color:'+(sf.attiva?'var(--grn)':'var(--mut)')+'">'+(sf.attiva?'Si':'No')+'</span></td>';
+      if (canW()) html += '<td class="ac">'+editBtn+'</td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    
+    // Complete fase button
+    if (canW() && fase.stato !== 'completata' && compl === attive && attive > 0) {
+      html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-p cf-btn" data-fid="'+fase.id+'" data-ft="'+ft+'" data-pid="'+proj.id+'">&#10003; Segna Fase come Completata</button></div>';
+    }
+
+    html += '</div>';
+  }
+
+  el('page').innerHTML = html;
+
+  // Wire events
+  var efbs = document.querySelectorAll('.ef-btn');
+  for (var i=0;i<efbs.length;i++) { efbs[i].addEventListener('click', function(){ openEditFase(this.getAttribute('data-fid'),this.getAttribute('data-ft')); }); }
+
+  var esfbs = document.querySelectorAll('.esf-btn');
+  for (var j=0;j<esfbs.length;j++) { esfbs[j].addEventListener('click', function(){ openEditSF(this.getAttribute('data-sfid'),this.getAttribute('data-faseid'),this.getAttribute('data-disc'),this.getAttribute('data-ftype')); }); }
+
+  var cfbs = document.querySelectorAll('.cf-btn');
+  for (var k=0;k<cfbs.length;k++) { cfbs[k].addEventListener('click', function(){ completaFase(this.getAttribute('data-fid'),this.getAttribute('data-ft'),this.getAttribute('data-pid')); }); }
+
+  var nfbs = document.querySelectorAll('.notif-btn');
+  for (var n=0;n<nfbs.length;n++) { nfbs[n].addEventListener('click', function(){ inviaNotificaSF(this.getAttribute('data-sfid')); }); }
+}
+
+// ── EDIT FASE ──
+function openEditFase(fid, ft) {
+  var body = '<div class="fg"><label class="fl">Stato Fase '+FASI_LABELS[ft]+'</label>'
+    +'<select class="fc" id="ef-stato"><option value="non_avviata">Non Avviata</option><option value="in_corso">In Corso</option><option value="completata">Completata</option></select></div>'
+    +'<div class="fg2"><div class="fg"><label class="fl">Data Inizio</label><input type="date" class="fc" id="ef-di"></div>'
+    +'<div class="fg"><label class="fl">Data Fine Prevista</label><input type="date" class="fc" id="ef-df"></div></div>'
+    +'<div class="fg"><label class="fl">Note</label><textarea class="fc" id="ef-note" rows="3"></textarea></div>';
+  el('mf-t').textContent = 'Fase: '+FASI_LABELS[ft];
+  el('mf-body').innerHTML = body;
+  // Load current values
+  SB.from('project_fasi').select('*').eq('id',fid).single().then(function(r){
+    if (r.data) {
+      el('ef-stato').value = r.data.stato || 'non_avviata';
+      el('ef-di').value = r.data.data_inizio || '';
+      el('ef-df').value = r.data.data_fine_prevista || '';
+      el('ef-note').value = r.data.note || '';
+    }
+  });
+  el('sf-btn').onclick = function() { saveFase(fid); };
+  openM('m-fase');
+}
+
+function saveFase(fid) {
+  setLoading('sf-btn', true);
+  var pay = {stato: el('ef-stato').value, data_inizio: el('ef-di').value||null, data_fine_prevista: el('ef-df').value||null, note: el('ef-note').value.trim()||null};
+  if (pay.stato === 'completata') pay.data_completamento = new Date().toISOString().split('T')[0];
+  SB.from('project_fasi').update(pay).eq('id', fid).then(function(r){
+    setLoading('sf-btn', false);
+    if (r.error) { toast(r.error.message,'error'); return; }
+    toast('Fase aggiornata','success'); closeM('m-fase');
+    loadFasiProgetto(SF_PROJ_ID);
+  });
+}
+
+// ── EDIT SOTTOFASE ──
+function openEditSF(sfid, faseid, disc, ftype) {
+  SF_EDIT_ID = sfid; SF_FASE_ID = faseid; SF_DISC = disc;
+  el('msf-t').textContent = FASI_LABELS[ftype]+' - '+DISC_LABELS[disc];
+  var ropts = '<option value="">- Nessuno -</option>';
+  for (var i=0;i<PROFS.length;i++) ropts += '<option value="'+PROFS[i].id+'">'+esc(PROFS[i].full_name)+'</option>';
+  el('sf-resp').innerHTML = ropts;
+  el('sf-notif-box').innerHTML = '';
+  el('sf-notif-box').style.display = 'none';
+  SB.from('project_sottofasi').select('*').eq('id',sfid).single().then(function(r){
+    if (!r.data) return;
+    var sf = r.data;
+    el('sf-stato').value = sf.stato || 'non_avviata';
+    el('sf-resp').value = sf.responsabile_id || '';
+    el('sf-di').value = sf.data_inizio || '';
+    el('sf-df').value = sf.data_fine_prevista || '';
+    el('sf-attiva').value = sf.attiva ? '1' : '0';
+    el('sf-note').value = sf.note || '';
+    // If marking as completata show notification preview
+    el('sf-stato').addEventListener('change', function(){
+      if (this.value === 'completata') showNotifPreview(sfid, faseid, disc, ftype);
+      else { el('sf-notif-box').innerHTML=''; el('sf-notif-box').style.display='none'; }
+    });
+    if (sf.stato === 'completata') showNotifPreview(sfid, faseid, disc, ftype);
+  });
+  el('ssf-btn').onclick = function() { saveSF(sfid); };
+  openM('m-sf');
+}
+
+function showNotifPreview(sfid, faseid, disc, ftype) {
+  // Find next fasi/sottofasi for this project
+  SB.from('project_sottofasi').select('*,project_fasi(fase),profiles(full_name)').eq('project_id', SF_PROJ_ID).then(function(r){
+    var all = r.data || [];
+    // Get all team members from profiles who have time entries on this project
+    SB.from('time_entries').select('operator_id,profiles(full_name)').eq('project_id', SF_PROJ_ID).then(function(te){
+      var members = {};
+      var tel = te.data || [];
+      for (var i=0;i<tel.length;i++){
+        if (tel[i].profiles && tel[i].operator_id) members[tel[i].operator_id] = tel[i].profiles.full_name;
+      }
+      // Also add project owner and responsabili
+      for (var j=0;j<PROFS.length;j++) members[PROFS[j].id] = PROFS[j].full_name;
+
+      // Find next phases that are not started in same or next fase
+      var nextSFs = [];
+      var fasiOrder = FASI_ORDER;
+      var curFaseIdx = fasiOrder.indexOf(ftype);
+      for (var s=0;s<all.length;s++){
+        var sf = all[s];
+        var sfFase = (sf.project_fasi && sf.project_fasi.fase) ? sf.project_fasi.fase : null;
+        var sfFaseIdx = sfFase ? fasiOrder.indexOf(sfFase) : -1;
+        if (sf.id !== sfid && sf.attiva && sf.stato !== 'completata' && sfFaseIdx >= curFaseIdx) {
+          if (sf.profiles && sf.profiles.full_name) nextSFs.push(sf);
+        }
+      }
+
+      var box = el('sf-notif-box');
+      var html = '<div class="ibox"><b>&#128231; Anteprima notifica email</b><br>';
+      html += '<span style="font-size:11px">Verrà aperto il tuo client email con questa bozza:</span>';
+      html += '<div style="margin-top:8px;padding:8px;background:#fff;border-radius:4px;border:1px solid var(--bord);font-size:12px">';
+      html += '<b>Oggetto:</b> Fase '+FASI_LABELS[ftype]+' - '+DISC_LABELS[disc]+' completata<br>';
+      html += '<b>A:</b> Tutti i membri del progetto + responsabili fasi successive<br>';
+      if (nextSFs.length) {
+        html += '<b>Fasi successive:</b> ';
+        var nxt = [];
+        for (var n=0;n<Math.min(nextSFs.length,3);n++){
+          var ns = nextSFs[n];
+          var nft = (ns.project_fasi && ns.project_fasi.fase) ? ns.project_fasi.fase : '-';
+          nxt.push(FASI_LABELS[nft]+' - '+DISC_LABELS[ns.disciplina]);
+        }
+        html += nxt.join(', ');
+      } else {
+        html += '<b>Fasi successive:</b> Nessuna (ultima sottofase)';
+      }
+      html += '</div></div>';
+      box.innerHTML = html;
+      box.style.display = 'block';
+    });
+  });
+}
+
+function saveSF(sfid) {
+  var nuovoStato = el('sf-stato').value;
+  setLoading('ssf-btn', true);
+  var pay = {
+    stato: nuovoStato,
+    responsabile_id: el('sf-resp').value || null,
+    data_inizio: el('sf-di').value || null,
+    data_fine_prevista: el('sf-df').value || null,
+    attiva: el('sf-attiva').value === '1',
+    note: el('sf-note').value.trim() || null
+  };
+  if (nuovoStato === 'completata') pay.data_completamento = new Date().toISOString().split('T')[0];
+  SB.from('project_sottofasi').update(pay).eq('id', sfid).then(function(r){
+    setLoading('ssf-btn', false);
+    if (r.error) { toast(r.error.message,'error'); return; }
+    toast('Sottofase aggiornata','success');
+    // If completata, offer to send notification
+    if (nuovoStato === 'completata') {
+      closeM('m-sf');
+      inviaNotificaSF(sfid);
+    } else {
+      closeM('m-sf');
+    }
+    loadFasiProgetto(SF_PROJ_ID);
+  });
+}
+
+// ── NOTIFICA EMAIL ──
+function inviaNotificaSF(sfid) {
+  // Load sottofase + fase + project + all sottofasi
+  SB.from('project_sottofasi').select('*,project_fasi(fase,id),profiles(full_name)').eq('id', sfid).single().then(function(r){
+    if (r.error || !r.data) { toast('Errore caricamento sottofase','error'); return; }
+    var sf = r.data;
+    var ftype = sf.project_fasi ? sf.project_fasi.fase : '?';
+    var faseId = sf.project_fasi ? sf.project_fasi.id : null;
+
+    SB.from('projects').select('*').eq('id', SF_PROJ_ID).single().then(function(rp){
+      var proj = rp.data || {};
+
+      // Get all project members (profiles) and next active sottofasi
+      SB.from('project_sottofasi').select('*,project_fasi(fase),profiles(full_name)').eq('project_id', SF_PROJ_ID).then(function(rall){
+        var allSF = rall.data || [];
+        var fasiOrder = FASI_ORDER;
+        var curFaseIdx = fasiOrder.indexOf(ftype);
+        
+        // Next sottofasi: same fase non completate + successiva fase
+        var nextSFs = [];
+        for (var i=0;i<allSF.length;i++){
+          var s = allSF[i];
+          var sFase = (s.project_fasi && s.project_fasi.fase) ? s.project_fasi.fase : null;
+          var sFaseIdx = sFase ? fasiOrder.indexOf(sFase) : -1;
+          if (s.id !== sfid && s.attiva && s.stato !== 'completata' && sFaseIdx >= curFaseIdx) nextSFs.push(s);
+        }
+
+        // Build email
+        var now = new Date();
+        var dataOggi = fdate(now.toISOString().split('T')[0]);
+        var oggetto = encodeURIComponent('[SCS] Completata: '+FASI_LABELS[ftype]+' - '+DISC_LABELS[sf.disciplina]+' | '+proj.name);
+
+        var bodyLines = [];
+        bodyLines.push('Gentili colleghi,');
+        bodyLines.push('');
+        bodyLines.push('Si comunica che in data '+dataOggi+' e stata completata la seguente sottofase di progettazione:');
+        bodyLines.push('');
+        bodyLines.push('PROGETTO: '+proj.name);
+        bodyLines.push('FASE: '+FASI_LABELS[ftype]);
+        bodyLines.push('DISCIPLINA: '+DISC_LABELS[sf.disciplina]);
+        if (sf.profiles && sf.profiles.full_name) bodyLines.push('RESPONSABILE: '+sf.profiles.full_name);
+        if (proj.cig) bodyLines.push('CIG: '+proj.cig);
+        bodyLines.push('');
+
+        if (nextSFs.length) {
+          bodyLines.push('FASI/SOTTOFASI SUCCESSIVE:');
+          // Group by fase
+          var byFase = {};
+          for (var j=0;j<nextSFs.length;j++){
+            var ns = nextSFs[j];
+            var nf = (ns.project_fasi && ns.project_fasi.fase) ? ns.project_fasi.fase : '-';
+            if (!byFase[nf]) byFase[nf] = [];
+            byFase[nf].push(DISC_LABELS[ns.disciplina] + (ns.profiles&&ns.profiles.full_name?' (resp: '+ns.profiles.full_name+')':''));
+          }
+          for (var fase in byFase) {
+            bodyLines.push('  '+FASI_LABELS[fase]+':');
+            for (var k=0;k<byFase[fase].length;k++) bodyLines.push('    - '+byFase[fase][k]);
+          }
+        } else {
+          bodyLines.push('Questa e l ultima sottofase attiva del progetto.');
+        }
+
+        bodyLines.push('');
+        bodyLines.push('Cordiali saluti,');
+        bodyLines.push(PROF ? PROF.full_name : 'Studio SCS');
+        bodyLines.push('Studio Tecnico SCS S.r.l. tra Professionisti');
+
+        var NL = String.fromCharCode(10); var bodyText = encodeURIComponent(bodyLines.join(NL));
+
+        // Collect TO addresses: all profiles with email
+        // We use ME.email + ask to add others manually since we only have profile names not emails
+        var toAddr = ME.email;
+
+        // Add responsabili of next phases if we have their emails
+        // (We collect from auth - we only have current user email for sure)
+        // Open mailto
+        var mailtoLink = 'mailto:'+toAddr+'?subject='+oggetto+'&body='+bodyText;
+        
+        // Show confirmation dialog
+        var conf = confirm('Vuoi aprire il client email per inviare la notifica di completamento? Ricorda di aggiungere in CC le email dei colleghi interessati.');
+        if (conf) {
+          window.location.href = mailtoLink;
+          // Mark as notified
+          SB.from('project_sottofasi').update({notifica_inviata: true}).eq('id', sfid).then(function(){
+            loadFasiProgetto(SF_PROJ_ID);
+          });
+        }
+      });
+    });
+  });
+}
+
+// ── COMPLETA FASE INTERA ──
+function completaFase(fid, ft, pid) {
+  if (!confirm('Segnare la fase '+FASI_LABELS[ft]+' come completata?')) return;
+  SB.from('project_fasi').update({stato:'completata', data_completamento: new Date().toISOString().split('T')[0]}).eq('id', fid).then(function(r){
+    if (r.error) { toast(r.error.message,'error'); return; }
+    toast('Fase '+FASI_LABELS[ft]+' completata','success');
+    loadFasiProgetto(pid);
+  });
+}
+
 </script>
 </body>
 </html>
