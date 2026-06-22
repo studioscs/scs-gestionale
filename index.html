@@ -171,7 +171,7 @@ tbody tr:hover td { background: #f0f4f9; }
 
 <!-- AUTH -->
 <div id="auth">
-  <div class="abox">
+  <div class="abox" id="abox-inner">
     <div class="alogo">
       <h1>SCS Gestionale Progetti</h1>
       <p>Studio Tecnico SCS S.r.l. tra Professionisti</p>
@@ -188,7 +188,20 @@ tbody tr:hover td { background: #f0f4f9; }
     <button class="btn btn-p btn-full" id="abtn">Accedi</button>
     <p style="text-align:center;margin-top:14px">
       <a href="#" id="aforgot" style="font-size:12px;color:var(--mut)">Password dimenticata?</a>
+      &nbsp;·&nbsp;
+      <a href="#" id="areglink" style="font-size:12px;color:var(--blue)">Registrati</a>
     </p>
+    <!-- REGISTER PANEL -->
+    <div id="regpanel" style="display:none;margin-top:20px;border-top:1px solid var(--bord);padding-top:20px">
+      <div style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:14px">Crea Account</div>
+      <div class="aerr" id="rerr"></div>
+      <div class="fg"><label class="fl">Nome Completo *</label><input class="fc" id="rnome" placeholder="Es. Mario Rossi"></div>
+      <div class="fg"><label class="fl">Email *</label><input class="fc" type="email" id="remail" placeholder="nome@studiotecnicoscs.com"></div>
+      <div class="fg"><label class="fl">Password *</label><input class="fc" type="password" id="rpass" placeholder="Minimo 6 caratteri"></div>
+      <div class="fg"><label class="fl">Conferma Password *</label><input class="fc" type="password" id="rpass2" placeholder="Ripeti la password"></div>
+      <button class="btn btn-p btn-full" id="rbtn">Registrati</button>
+      <p style="text-align:center;margin-top:10px"><a href="#" id="rbacklink" style="font-size:12px;color:var(--mut)">← Torna al login</a></p>
+    </div>
   </div>
 </div>
 
@@ -435,6 +448,18 @@ document.addEventListener('DOMContentLoaded', function() {
   el('abtn').addEventListener('click', doLogin);
   el('apass').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
   el('aforgot').addEventListener('click', function(e){ e.preventDefault(); doForgot(); });
+  el('areglink').addEventListener('click', function(e){
+    e.preventDefault();
+    var rp = el('regpanel');
+    rp.style.display = rp.style.display === 'none' ? 'block' : 'none';
+  });
+  el('rbacklink').addEventListener('click', function(e){
+    e.preventDefault();
+    el('regpanel').style.display = 'none';
+    hideRegErr();
+  });
+  el('rbtn').addEventListener('click', doRegister);
+  el('rpass2').addEventListener('keydown', function(e){ if(e.key==='Enter') doRegister(); });
   el('sout').addEventListener('click', doLogout);
   el('sp-btn').addEventListener('click', saveProject);
   el('st-btn').addEventListener('click', saveTask);
@@ -500,6 +525,41 @@ function doForgot() {
   SB.auth.resetPasswordForEmail(email, {redirectTo: window.location.href}).then(function(r) {
     if (r.error) toast(r.error.message,'error');
     else toast('Email di reset inviata.','success');
+  });
+}
+
+function showRegErr(msg) { var e=el('rerr'); e.textContent=msg; e.style.display='block'; }
+function hideRegErr() { var e=el('rerr'); if(e) e.style.display='none'; }
+
+function doRegister() {
+  hideRegErr();
+  var nome = el('rnome').value.trim();
+  var email = el('remail').value.trim();
+  var pass = el('rpass').value;
+  var pass2 = el('rpass2').value;
+  if (!nome) { showRegErr('Inserire il nome completo.'); return; }
+  if (!email) { showRegErr('Inserire la email.'); return; }
+  if (!pass || pass.length < 6) { showRegErr('La password deve essere di almeno 6 caratteri.'); return; }
+  if (pass !== pass2) { showRegErr('Le password non coincidono.'); return; }
+  setLoading('rbtn', true);
+  SB.auth.signUp({
+    email: email,
+    password: pass,
+    options: { data: { full_name: nome, role: 'collaboratore' } }
+  }).then(function(r) {
+    setLoading('rbtn', false);
+    if (r.error) { showRegErr(r.error.message); return; }
+    // Hide register panel, show success message
+    el('regpanel').style.display = 'none';
+    el('areglink').style.display = 'none';
+    el('aerr').style.display = 'none';
+    var ok = document.createElement('div');
+    ok.style.cssText = 'background:var(--grnlt);color:var(--grndk);border:1px solid #a3cfbb;border-radius:6px;padding:12px;font-size:13px;margin-top:14px;text-align:center';
+    ok.innerHTML = '✓ Registrazione completata!<br><span style="font-size:12px">Controlla la tua email per confermare l'account, poi accedi.<br>Comunica la tua email all'amministratore per l'attivazione.</span>';
+    el('abox-inner').appendChild(ok);
+  }).catch(function(e) {
+    setLoading('rbtn', false);
+    showRegErr('Errore: ' + e.message);
   });
 }
 
