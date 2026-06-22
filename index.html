@@ -1055,31 +1055,210 @@ function drawKanban(pf) {
 
 // TIMELINE
 function rTimeline() {
-  var now=new Date(), y=now.getFullYear();
-  var mns=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-  var ref=new Date(y,0,1), tot=365;
-  function doff(d){return d?Math.round((new Date(d)-ref)/86400000):null;}
-  function pct(d){var o=doff(d);return o===null?null:Math.max(0,Math.min(100,o/tot*100));}
-  function bar(s,e){var os=doff(s)||0,oe=doff(e)||os+60;var l=Math.max(0,os/tot*100);var w=Math.max(0.5,Math.min(100-l,(oe-os)/tot*100));return{l:l,w:w};}
-  var wd=[];for(var i=0;i<PROJS.length;i++){if(PROJS[i].start_date||PROJS[i].end_date)wd.push(PROJS[i]);}
-  if(!wd.length){el('page').innerHTML='<div class="card"><div class="empty"><p>Nessun progetto con date. Inserisci le date nei progetti.</p></div></div>';return;}
-  var tp=pct(now.toISOString().split('T')[0]);
-  var mh=''; for(var m=0;m<12;m++) mh+='<div class="gm">'+mns[m]+'</div>';
-  var rows='';
-  for(var p=0;p<wd.length;p++){
-    var pr=wd[p],b=bar(pr.start_date,pr.end_date);
-    var col=pr.status==='completato'?'#198754':pr.status==='sospeso'?'#856404':'#2E75B6';
-    rows+='<div class="grow"><div class="growl">'+bdg(pr.status)+' '+esc(pr.name)+'</div>'
-      +'<div class="gbrs"><div class="gbar" style="left:'+b.l.toFixed(1)+'%;width:'+b.w.toFixed(1)+'%;background:'+col+'">'+esc(pr.name)+'</div></div></div>';
+  // Year selector
+  var selYear = document.getElementById('tl-year');
+  var now = new Date();
+  var y = selYear ? parseInt(selYear.value) : now.getFullYear();
+  if (!selYear) {
+    var curY = now.getFullYear();
+    var yopts = '';
+    for (var yi = curY-1; yi <= curY+2; yi++) yopts += '<option value="'+yi+'"'+(yi===curY?' selected':'')+'>'+yi+'</option>';
+    el('top-act').innerHTML = '<select id="tl-year" class="btn btn-sm" style="padding:5px 8px" onchange="rTimeline()">'+yopts+'</select>';
+    selYear = document.getElementById('tl-year');
+    y = curY;
+  } else {
+    y = parseInt(selYear.value) || now.getFullYear();
   }
-  var tline=tp!==null?'<div style="position:absolute;top:0;bottom:0;left:calc(240px + (100% - 240px)*'+( tp/100).toFixed(4)+');width:2px;background:rgba(176,42,55,.75);pointer-events:none;z-index:2"></div>':'';
-  el('page').innerHTML='<div class="card"><div class="card-h"><span class="card-t">Timeline '+y+'</span><span style="font-size:12px;color:var(--mut)">Linea rossa = oggi</span></div>'
-    +'<div class="gw"><div class="gi"><div class="ghdr"><div class="glc">Progetto</div><div class="gmc">'+mh+'</div></div>'
-    +'<div style="position:relative">'+rows+tline+'</div>'
-    +'</div></div></div>';
+  var mns = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  var ref = new Date(y, 0, 1);
+  var tot = 365;
+
+  function doff(d) {
+    if (!d) return null;
+    return Math.round((new Date(d) - ref) / 86400000);
+  }
+  function bar(s, e, fallbackLen) {
+    var os = doff(s);
+    var oe = doff(e);
+    if (os === null && oe === null) return null;
+    if (os === null) os = oe - (fallbackLen || 30);
+    if (oe === null) oe = os + (fallbackLen || 30);
+    var l = Math.max(0, os / tot * 100);
+    var w = Math.max(0.3, Math.min(100 - l, (oe - os) / tot * 100));
+    return { l: l, w: w };
+  }
+  function todayPct() {
+    var o = doff(now.toISOString().split('T')[0]);
+    return Math.max(0, Math.min(100, o / tot * 100));
+  }
+
+  // Load all data in parallel
+  Promise.all([
+    SB.from('projects').select('id,name,status,start_date,end_date').order('name'),
+    SB.from('project_fasi').select('id,project_id,fase,stato,data_inizio,data_fine_prevista').order('fase'),
+    SB.from('tasks').select('id,title,project_id,fase_id,status,due_date,created_at,completed_at,estimated_hours,priority').order('due_date',{ascending:true})
+  ]).then(function(rs) {
+    PROJS = rs[0].data || [];
+    var fasi = rs[1].data || [];
+    var tasks = rs[2].data || [];
+
+    if (!PROJS.length) {
+      el('page').innerHTML = '<div class="card"><div class="empty"><p>Nessun progetto con date. Inserisci le date nei progetti.</p></div></div>';
+      return;
+    }
+
+    var tp = todayPct();
+    var mhdr = '';
+    for (var m = 0; m < 12; m++) mhdr += '<div class="gm">' + mns[m] + '</div>';
+
+    // Colors
+    var fasiColors = { preliminare: '#5B9BD5', definitivo: '#2E75B6', esecutivo: '#1F3864' };
+    var statoColors = { attivo: '#2E75B6', sospeso: '#856404', completato: '#198754', pianificazione: '#6C757D' };
+    var taskColor = '#AD5C00';
+    var taskDoneColor = '#198754';
+
+    var rows = '';
+
+    for (var pi = 0; pi < PROJS.length; pi++) {
+      var pr = PROJS[pi];
+      var pb = bar(pr.start_date, pr.end_date, 90);
+      var pCol = statoColors[pr.status] || '#2E75B6';
+
+      // Project row
+      rows += '<div class="grow" style="background:#F0F4F8">';
+      rows += '<div class="growl" style="font-weight:700;font-size:12px;color:var(--navy)">';
+      rows += '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+pCol+';margin-right:4px;flex-shrink:0"></span>';
+      rows += esc(pr.name) + '</div>';
+      rows += '<div class="gbrs">';
+      if (pb) {
+        rows += '<div class="gbar" style="left:'+pb.l.toFixed(1)+'%;width:'+pb.w.toFixed(1)+'%;background:'+pCol+';opacity:.9;font-size:10px">' + esc(pr.name) + '</div>';
+      }
+      rows += '</div></div>';
+
+      // Fasi for this project
+      var projFasi = [];
+      for (var fi = 0; fi < fasi.length; fi++) {
+        if (fasi[fi].project_id === pr.id) projFasi.push(fasi[fi]);
+      }
+      var fasiOrder = ['preliminare', 'definitivo', 'esecutivo'];
+      var fasiLabels = { preliminare: 'Preliminare', definitivo: 'Definitivo', esecutivo: 'Esecutivo' };
+
+      for (var foi = 0; foi < fasiOrder.length; foi++) {
+        var ft = fasiOrder[foi];
+        var fase = null;
+        for (var fj = 0; fj < projFasi.length; fj++) {
+          if (projFasi[fj].fase === ft) { fase = projFasi[fj]; break; }
+        }
+        if (!fase) continue;
+
+        var fb = bar(fase.data_inizio, fase.data_fine_prevista, 60);
+        var fCol = fasiColors[ft] || '#2E75B6';
+
+        // Fase row
+        rows += '<div class="grow" style="background:#F8FAFE">';
+        rows += '<div class="growl" style="font-size:11px;color:'+fCol+';padding-left:20px">';
+        rows += '<span style="font-weight:600">' + fasiLabels[ft] + '</span>';
+        rows += '<span style="font-size:10px;color:var(--mut);margin-left:6px">'+bdg(fase.stato)+'</span>';
+        rows += '</div>';
+        rows += '<div class="gbrs">';
+        if (fb) {
+          rows += '<div class="gbar" style="left:'+fb.l.toFixed(1)+'%;width:'+fb.w.toFixed(1)+'%;background:'+fCol+';opacity:.75;font-size:10px">' + fasiLabels[ft] + '</div>';
+        }
+        rows += '</div></div>';
+
+        // Tasks for this fase
+        var faseTasks = [];
+        for (var ti = 0; ti < tasks.length; ti++) {
+          if (tasks[ti].fase_id === fase.id) faseTasks.push(tasks[ti]);
+        }
+        for (var tki = 0; tki < faseTasks.length; tki++) {
+          var tk = faseTasks[tki];
+          // Task bar: from created_at to due_date
+          var tStart = tk.created_at ? tk.created_at.split('T')[0] : null;
+          var tEnd = tk.due_date || tk.completed_at || null;
+          // If no end date but has estimated hours, project end from start
+          if (!tEnd && tStart && tk.estimated_hours) {
+            var estDays = Math.ceil(Number(tk.estimated_hours) / 8);
+            var estEnd = new Date(tStart);
+            var addedDays = 0;
+            while (addedDays < estDays) {
+              estEnd.setDate(estEnd.getDate() + 1);
+              var dow2 = estEnd.getDay();
+              if (dow2 !== 0 && dow2 !== 6) addedDays++;
+            }
+            tEnd = estEnd.toISOString().split('T')[0];
+          }
+          var tb = bar(tStart, tEnd, 14);
+          var tCol = tk.status === 'completato' ? taskDoneColor : taskColor;
+          rows += '<div class="grow">';
+          rows += '<div class="growl" style="font-size:11px;color:var(--mut);padding-left:36px">';
+          rows += '<span class="prdot ' + pcls(tk.priority || 'media') + '" style="margin-right:4px"></span>';
+          rows += esc(tk.title);
+          rows += '</div>';
+          rows += '<div class="gbrs">';
+          if (tb) {
+            rows += '<div class="gbar" style="left:'+tb.l.toFixed(1)+'%;width:'+tb.w.toFixed(1)+'%;background:'+tCol+';opacity:.8;font-size:9px">' + esc(tk.title) + '</div>';
+          }
+          rows += '</div></div>';
+        }
+      }
+
+      // Tasks for this project NOT linked to a fase
+      var projTasksNoFase = [];
+      for (var pti = 0; pti < tasks.length; pti++) {
+        if (tasks[pti].project_id === pr.id && !tasks[pti].fase_id) projTasksNoFase.push(tasks[pti]);
+      }
+      for (var ntki = 0; ntki < projTasksNoFase.length; ntki++) {
+        var ntk = projTasksNoFase[ntki];
+        var ntStart = ntk.created_at ? ntk.created_at.split('T')[0] : null;
+        var ntEnd = ntk.due_date || ntk.completed_at || null;
+        if (!ntEnd && ntStart && ntk.estimated_hours) {
+          var nestDays = Math.ceil(Number(ntk.estimated_hours) / 8);
+          var nestEnd = new Date(ntStart);
+          var nAddedDays = 0;
+          while (nAddedDays < nestDays) {
+            nestEnd.setDate(nestEnd.getDate() + 1);
+            var ndow = nestEnd.getDay();
+            if (ndow !== 0 && ndow !== 6) nAddedDays++;
+          }
+          ntEnd = nestEnd.toISOString().split('T')[0];
+        }
+        var ntb = bar(ntStart, ntEnd, 14);
+        var ntCol = ntk.status === 'completato' ? taskDoneColor : taskColor;
+        rows += '<div class="grow">';
+        rows += '<div class="growl" style="font-size:11px;color:var(--mut);padding-left:20px">';
+        rows += '<span class="prdot ' + pcls(ntk.priority || 'media') + '" style="margin-right:4px"></span>';
+        rows += esc(ntk.title);
+        rows += '</div>';
+        rows += '<div class="gbrs">';
+        if (ntb) {
+          rows += '<div class="gbar" style="left:'+ntb.l.toFixed(1)+'%;width:'+ntb.w.toFixed(1)+'%;background:'+ntCol+';opacity:.8;font-size:9px">' + esc(ntk.title) + '</div>';
+        }
+        rows += '</div></div>';
+      }
+    }
+
+    // Today line
+    var tline = '<div style="position:absolute;top:0;bottom:0;left:calc(240px + (100% - 240px)*'+( tp/100).toFixed(4)+');width:2px;background:rgba(176,42,55,.8);pointer-events:none;z-index:2"></div>';
+
+    // Legend
+    var legend = '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--mut)">'
+      +'<span><span style="display:inline-block;width:12px;height:8px;border-radius:2px;background:#2E75B6;margin-right:4px"></span>Progetto</span>'
+      +'<span><span style="display:inline-block;width:12px;height:8px;border-radius:2px;background:#5B9BD5;opacity:.75;margin-right:4px"></span>Fase</span>'
+      +'<span><span style="display:inline-block;width:12px;height:8px;border-radius:2px;background:#AD5C00;opacity:.8;margin-right:4px"></span>Task aperto</span>'
+      +'<span><span style="display:inline-block;width:12px;height:8px;border-radius:2px;background:#198754;opacity:.8;margin-right:4px"></span>Task completato</span>'
+      +'<span><span style="display:inline-block;width:2px;height:14px;background:rgba(176,42,55,.8);margin-right:4px;vertical-align:middle"></span>Oggi</span>'
+      +'</div>';
+
+    el('page').innerHTML = '<div class="card">'
+      +'<div class="card-h"><span class="card-t">Timeline ' + y + ' - Progetti, Fasi, Task</span>' + legend + '</div>'
+      +'<div class="gw"><div class="gi">'
+      +'<div class="ghdr"><div class="glc">Progetto / Fase / Task</div><div class="gmc">' + mhdr + '</div></div>'
+      +'<div style="position:relative">' + rows + tline + '</div>'
+      +'</div></div></div>';
+  });
 }
 
-// TIME
 
 // ── CALCOLO ORE LAVORATIVE ──────────────────────────────────
 // Giorni lavorativi lun-ven, 8h/giorno. Sabato e domenica esclusi.
