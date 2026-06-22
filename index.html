@@ -866,8 +866,10 @@ function saveProject() {
         '4-impianti-meccanici',
         '5-impianti-idrico-fognari',
         '6-impianti-elettrici-e-speciali',
-        '7-impianti-antincendio',
-        '8-acustica'
+        '7-impianti-fotovoltaici',
+        '8-impianti-antincendio',
+        '9-acustica',
+        '10-elaborati-amministrativi'
       ];
       for (var ci=0; ci<cartelle.length; ci++) {
         (function(cart){
@@ -1410,7 +1412,7 @@ function rFiles(){
     for(var i=0;i<PROJS.length;i++) popts+='<option value="'+PROJS[i].id+'">'+esc(PROJS[i].name)+'</option>';
     var upHtml=canW()?'<div class="fg2">'
       +'<div class="fg"><label class="fl">Commessa *</label><select class="fc" id="uppj">'+popts+'</select></div>'
-      +'<div class="fg"><label class="fl">Cartella *</label><select class="fc" id="upcart"><option value="">-- Seleziona cartella --</option><option value=\"0-doc-esistente\">0 - Doc Esistente</option><option value=\"1-rilievo\">1 - Rilievo</option><option value=\"2-architettura\">2 - Architettura</option><option value=\"3-strutture\">3 - Strutture</option><option value=\"4-impianti-meccanici\">4 - Impianti Meccanici</option><option value=\"5-impianti-idrico-fognari\">5 - Impianti Idrico-Fognari</option><option value=\"6-impianti-elettrici-e-speciali\">6 - Impianti Elettrici e Speciali</option><option value=\"7-impianti-antincendio\">7 - Impianti Antincendio</option><option value=\"8-acustica\">8 - Acustica</option></select></div>'
+      +'<div class="fg"><label class="fl">Cartella *</label><select class="fc" id="upcart"><option value="">-- Seleziona cartella --</option><option value=\"0-doc-esistente\">0 - Doc Esistente</option><option value=\"1-rilievo\">1 - Rilievo</option><option value=\"2-architettura\">2 - Architettura</option><option value=\"3-strutture\">3 - Strutture</option><option value=\"4-impianti-meccanici\">4 - Impianti Meccanici</option><option value=\"5-impianti-idrico-fognari\">5 - Impianti Idrico-Fognari</option><option value=\"6-impianti-elettrici-e-speciali\">6 - Impianti Elettrici e Speciali</option><option value=\"7-impianti-fotovoltaici\">7 - Impianti Fotovoltaici</option><option value=\"8-impianti-antincendio\">8 - Impianti Antincendio</option><option value=\"9-acustica\">9 - Acustica</option><option value=\"10-elaborati-amministrativi\">10 - Elaborati Amministrativi</option></select></div>'
       +'</div>'
       +'<div style="font-size:11px;color:var(--mut2);margin-bottom:10px" id="fiinfo">Seleziona commessa e cartella.</div>'
       +'<div class="dz" id="dz"><div style="font-size:28px;color:var(--mut2);margin-bottom:8px">📤</div><div style="font-size:13px;color:var(--mut);line-height:1.5"><strong>Trascina file qui</strong> o clicca per selezionare<br><span style="font-size:12px">Cartella automatica per commessa in Supabase Storage</span></div></div>'
@@ -1423,7 +1425,7 @@ function rFiles(){
       var funm=(fi.profiles&&fi.profiles.full_name)?fi.profiles.full_name:'-';
       var fdt=fi.created_at?fi.created_at.split('T')[0]:null;
       var fdb=isAd()?'<button class="btn btn-sm btn-d df-btn" data-id="'+fi.id+'" data-path="'+esc(fi.storage_path)+'" style="margin-left:4px">🗑</button>':'';
-      frows+='<tr><td style="font-weight:600">'+esc(fi.name)+'</td><td style="font-size:12px;color:var(--mut)">'+esc(fpnm)+'</td>'+(function(){var fsp=(fi.storage_path||'').split('/');var fcl=fsp.length>=3?fsp[1]:'-';var fcm={'0-doc-esistente':'0-Doc','1-rilievo':'1-Rilievo','2-architettura':'2-Arch.','3-strutture':'3-Strutt.','4-impianti-meccanici':'4-Mecc.','5-impianti-idrico-fognari':'5-Idrico','6-impianti-elettrici-e-speciali':'6-Elett.','7-impianti-antincendio':'7-Antin.','8-acustica':'8-Acust.'};return '<td style="font-size:11px;color:var(--blue)">'+esc(fcm[fcl]||fcl)+'</td>';}())+'<td style="font-size:12px">'+esc(funm)+'</td><td style="font-size:12px;color:var(--mut)">'+fsize(fi.size_bytes)+'</td><td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td><td class="ac"><button class="btn btn-sm dlf-btn" data-path="'+esc(fi.storage_path)+'" data-name="'+esc(fi.name)+'">⬇</button>'+fdb+'</td></tr>';
+      frows+='<tr><td style="font-weight:600">'+esc(fi.name)+'</td><td style="font-size:12px;color:var(--mut)">'+esc(fpnm)+'</td>'+(function(){var fsp=(fi.storage_path||'').split('/');var fcl=fsp.length>=3?fsp[1]:'-';var fcm={'0-doc-esistente':'0-Doc','1-rilievo':'1-Rilievo','2-architettura':'2-Arch.','3-strutture':'3-Strutt.','4-impianti-meccanici':'4-Mecc.','5-impianti-idrico-fognari':'5-Idrico','6-impianti-elettrici-e-speciali':'6-Elett.','7-impianti-fotovoltaici':'7-Fotov.','8-impianti-antincendio':'8-Antin.','9-acustica':'9-Acust.','10-elaborati-amministrativi':'10-Amm.'};return '<td style="font-size:11px;color:var(--blue)">'+esc(fcm[fcl]||fcl)+'</td>';}())+'<td style="font-size:12px">'+esc(funm)+'</td><td style="font-size:12px;color:var(--mut)">'+fsize(fi.size_bytes)+'</td><td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td><td class="ac"><button class="btn btn-sm dlf-btn" data-path="'+esc(fi.storage_path)+'" data-name="'+esc(fi.name)+'">⬇</button>'+fdb+'</td></tr>';
     }
     var ftbl=files.length?'<div class="tw"><table><thead><tr><th>Nome</th><th>Commessa</th><th>Cartella</th><th>Caricato da</th><th>Dimensione</th><th>Data</th><th></th></tr></thead><tbody>'+frows+'</tbody></table></div>':'<div class="empty"><i>📁</i><p>Nessun file caricato.</p></div>';
     el('page').innerHTML='<div class="card mb16"><div class="card-h"><span class="card-t">Carica File</span></div>'+upHtml+'</div><div class="card"><div class="card-h"><span class="card-t">File Caricati</span></div>'+ftbl+'</div>';
