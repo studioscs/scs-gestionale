@@ -1080,29 +1080,93 @@ function rTimeline() {
 }
 
 // TIME
+
+// ── CALCOLO ORE LAVORATIVE ──────────────────────────────────
+// Giorni lavorativi lun-ven, 8h/giorno. Sabato e domenica esclusi.
+function calcolaGiorniLavorativi(dataInizio, dataFine) {
+  if (!dataInizio || !dataFine) return 0;
+  var start = new Date(dataInizio);
+  var end = new Date(dataFine);
+  if (end < start) return 0;
+  var giorni = 0;
+  var cur = new Date(start);
+  while (cur <= end) {
+    var dow = cur.getDay(); // 0=dom, 6=sab
+    if (dow !== 0 && dow !== 6) giorni++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return giorni;
+}
+
+function calcolaOreEffettive(dataInizio, dataFine) {
+  return calcolaGiorniLavorativi(dataInizio, dataFine) * 8;
+}
+
 function rTime() {
   if(canW()){el('top-act').innerHTML='<button class="btn btn-p btn-sm" id="te-new">+ Registra Ore</button>';el('te-new').addEventListener('click',openTEModal);}
-  Promise.all([SB.from('time_entries').select('*,projects(name),profiles(full_name)').order('entry_date',{ascending:false}),SB.from('projects').select('id,name').order('name')]).then(function(rs){
-    var entries=rs[0].data||[]; PROJS=rs[1].data||[];
+  Promise.all([
+    SB.from('time_entries').select('*,projects(name),profiles(full_name)').order('entry_date',{ascending:false}),
+    SB.from('projects').select('id,name').order('name'),
+    SB.from('tasks').select('id,title,project_id,estimated_hours,created_at,completed_at,status,responsabile_id,assignee_id').order('created_at',{ascending:false})
+  ]).then(function(rs){
+    var entries=rs[0].data||[]; PROJS=rs[1].data||[]; var alltasks=rs[2].data||[];
     var tot=0, byP={};
     for(var i=0;i<entries.length;i++){var h=Number(entries[i].hours||0);tot+=h;var pid=entries[i].project_id;byP[pid]=(byP[pid]||0)+h;}
     var topP=[]; for(var k in byP) topP.push([k,byP[k]]); topP.sort(function(a,b){return b[1]-a[1];}); topP=topP.slice(0,6);
-    var ph=''; for(var p=0;p<topP.length;p++){var pp=tot?Math.round(topP[p][1]/tot*100):0;ph+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>'+esc(pn(topP[p][0]))+'</span><span style="font-weight:600">'+topP[p][1].toFixed(1)+' h</span></div><div class="pb"><div class="pbf" style="width:'+pp+'%"></div></div></div>';}
-    var eh=''; var rec=entries.slice(0,12);
-    for(var e=0;e<rec.length;e++){
-      var en=rec[e];
-      var pnm=(en.projects&&en.projects.name)?en.projects.name:'-';
-      var unm=(en.profiles&&en.profiles.full_name)?en.profiles.full_name:'-';
-      var db=isAd()?'<button class="btn btn-sm btn-d dte-btn" data-id="'+en.id+'" style="margin-left:6px">✕</button>':'';
-      eh+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bord)">'
-        +'<div style="flex:1;min-width:0"><div style="font-size:13px">'+esc(en.description||'-')+'</div>'
-        +'<div style="font-size:11px;color:var(--mut)">'+esc(pnm)+' · '+fdate(en.entry_date)+' · '+esc(unm)+'</div></div>'
-        +'<span style="font-weight:600;font-size:13px;color:var(--navy);flex-shrink:0">'+Number(en.hours).toFixed(1)+' h</span>'+db+'</div>';
+    var ph='';
+    for(var p=0;p<topP.length;p++){var pp=tot?Math.round(topP[p][1]/tot*100):0;ph+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>'+esc(pName(topP[p][0]))+'</span><span style="font-weight:600">'+topP[p][1].toFixed(1)+' h</span></div><div class="pb"><div class="pbf" style="width:'+pp+'%"></div></div></div>';}
+    var totPrev=0, totEff=0;
+    var trows='';
+    var oggiStr=new Date().toISOString().split('T')[0];
+    for(var t=0;t<alltasks.length;t++){
+      var tk=alltasks[t];
+      var prev=tk.estimated_hours?Number(tk.estimated_hours):null;
+      var eff=null;
+      if(tk.completed_at && tk.created_at){
+        eff=calcolaOreEffettive(tk.created_at.split('T')[0], tk.completed_at);
+      } else if(tk.created_at){
+        eff=calcolaOreEffettive(tk.created_at.split('T')[0], oggiStr);
+      }
+      if(prev) totPrev+=prev;
+      if(eff) totEff+=eff;
+      var varHtml='-';
+      if(prev && eff){
+        var diff=Math.round(eff-prev);
+        var dcol=diff>0?'var(--red)':'var(--grn)';
+        varHtml='<span style="font-size:12px;color:'+dcol+';font-weight:600">'+(diff>0?'+':'')+diff+'h</span>';
+      }
+      trows+='<tr>'
+        +'<td style="font-size:12px;font-weight:500">'+esc(tk.title)+'</td>'
+        +'<td style="font-size:12px;color:var(--mut)">'+esc(pName(tk.project_id))+'</td>'
+        +'<td style="font-size:12px;color:var(--mut)">'+esc(un(tk.responsabile_id))+'</td>'
+        +'<td>'+bdg(tk.status)+'</td>'
+        +'<td style="font-size:12px;text-align:center;color:var(--navy)">'+(prev?prev.toFixed(1)+' h':'-')+'</td>'
+        +'<td style="font-size:12px;text-align:center;color:var(--navy)">'+(eff?eff.toFixed(1)+' h':'-')+'</td>'
+        +'<td style="text-align:center">'+varHtml+'</td>'
+        +'</tr>';
     }
-    el('page').innerHTML='<div class="g2 mb16"><div class="kpi"><div class="kpi-l">Ore Totali</div><div class="kpi-v">'+tot.toFixed(1)+'</div></div><div class="kpi"><div class="kpi-l">Registrazioni</div><div class="kpi-v">'+entries.length+'</div></div></div>'
+    var tbl=alltasks.length?'<div class="tw"><table><thead><tr><th>Task</th><th>Progetto</th><th>Responsabile</th><th>Stato</th><th>Ore Previste</th><th>Ore Effettive</th><th>Scostamento</th></tr></thead><tbody>'+trows+'</tbody></table></div>':'<div class="empty"><p>Nessun task.</p></div>';
+    var eh='';
+    for(var e=0;e<Math.min(entries.length,12);e++){
+      var en=entries[e];
+      var pnm=(en.projects&&en.projects.name)?en.projects.name:'-';
+      var unm2=(en.profiles&&en.profiles.full_name)?en.profiles.full_name:'-';
+      var db2=isAd()?'<button class="btn btn-sm btn-d dte-btn" data-id="'+en.id+'" style="margin-left:6px">&#10005;</button>':'';
+      eh+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bord)"><div style="flex:1;min-width:0"><div style="font-size:13px">'+esc(en.description||'-')+'</div><div style="font-size:11px;color:var(--mut)">'+esc(pnm)+' &middot; '+fdate(en.entry_date)+' &middot; '+esc(unm2)+'</div></div><span style="font-weight:600;font-size:13px;color:var(--navy);flex-shrink:0">'+Number(en.hours).toFixed(1)+' h</span>'+db2+'</div>';
+    }
+    el('page').innerHTML=
+      '<div class="kgrid" style="margin-bottom:16px">'
+      +'<div class="kpi"><div class="kpi-l">Ore Registrate</div><div class="kpi-v">'+tot.toFixed(1)+'</div><div class="kpi-s">inserite manualmente</div></div>'
+      +'<div class="kpi"><div class="kpi-l">Ore Previste Task</div><div class="kpi-v">'+totPrev.toFixed(1)+'</div><div class="kpi-s">stimate al momento creazione</div></div>'
+      +'<div class="kpi"><div class="kpi-l">Ore Effettive Task</div><div class="kpi-v">'+totEff.toFixed(1)+'</div><div class="kpi-s">calcolate su giorni lavorativi</div></div>'
+      +'<div class="kpi"><div class="kpi-l">Registrazioni</div><div class="kpi-v">'+entries.length+'</div><div class="kpi-s">voci manuali</div></div>'
+      +'</div>'
+      +'<div class="ibox" style="margin-bottom:16px">&#128203; <b>Metodologia ore effettive:</b> Calcolate da data creazione task a data approvazione (o ad oggi se ancora aperto). Solo giorni lavorativi lun-ven, 8 ore/giorno. Sabato e domenica esclusi.</div>'
+      +'<div class="card" style="margin-bottom:16px"><div class="card-h"><span class="card-t">Previsione vs Effettivo per Task</span></div>'+tbl+'</div>'
       +'<div class="g2"><div class="card"><div class="card-h"><span class="card-t">Ore per Progetto</span></div>'+(ph||'<div class="empty"><p>Nessuna registrazione</p></div>')+'</div>'
-      +'<div class="card"><div class="card-h"><span class="card-t">Registrazioni Recenti</span></div>'+(eh||'<div class="empty"><p>Nessuna registrazione</p></div>')+'</div></div>';
-    var dtes=document.querySelectorAll('.dte-btn'); for(var d=0;d<dtes.length;d++){dtes[d].addEventListener('click',function(){delTE(this.getAttribute('data-id'));});}
+      +'<div class="card"><div class="card-h"><span class="card-t">Registrazioni Manuali Recenti</span></div>'+(eh||'<div class="empty"><p>Nessuna registrazione</p></div>')+'</div></div>';
+    var dtes=document.querySelectorAll('.dte-btn');
+    for(var d=0;d<dtes.length;d++){dtes[d].addEventListener('click',function(){delTE(this.getAttribute('data-id'));});}
   });
 }
 
@@ -1748,7 +1812,8 @@ function drawFaseTasks(faseId, tasks) {
 
 function approvaTask(tid, faseId) {
   if (!confirm('Approvare e chiudere questo task?')) return;
-  SB.from('tasks').update({status:'completato'}).eq('id',tid).then(function(r){
+  var oggi = new Date().toISOString().split('T')[0];
+  SB.from('tasks').update({status:'completato', completed_at: oggi}).eq('id',tid).then(function(r){
     if (r.error){toast(r.error.message,'error');return;}
     toast('Task approvato e chiuso','success');
     reloadFaseTasks(faseId);
