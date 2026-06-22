@@ -856,7 +856,25 @@ function saveProject() {
   op.then(function(r){
     setLoading('sp-btn',false);
     if(r.error){toast(r.error.message,'error');return;}
-    if(!EID && r.data && r.data.id) SB.storage.from('commesse').upload(r.data.id+'/.keep',new Blob([''],{type:'text/plain'}),{upsert:true});
+    if(!EID && r.data && r.data.id) {
+      var pid2 = r.data.id;
+      var cartelle = [
+        '0-doc-esistente',
+        '1-rilievo',
+        '2-architettura',
+        '3-strutture',
+        '4-impianti-meccanici',
+        '5-impianti-idrico-fognari',
+        '6-impianti-elettrici-e-speciali',
+        '7-impianti-antincendio',
+        '8-acustica'
+      ];
+      for (var ci=0; ci<cartelle.length; ci++) {
+        (function(cart){
+          SB.storage.from('commesse').upload(pid2+'/'+cart+'/.keep', new Blob([''],{type:'text/plain'}), {upsert:true});
+        })(cartelle[ci]);
+      }
+    }
     toast(EID?'Progetto aggiornato':'Progetto creato','success');
     closeM('m-proj'); rProjects();
   });
@@ -1283,11 +1301,15 @@ function calcolaOreEffettive(dataInizio, dataFine) {
 
 function rTime() {
   if(canW()){el('top-act').innerHTML='<button class="btn btn-p btn-sm" id="te-new">+ Registra Ore</button>';el('te-new').addEventListener('click',openTEModal);}
+  el('page').innerHTML='<div class="empty"><i style="font-size:30px;opacity:.3">&#9203;</i><p>Caricamento...</p></div>';
   Promise.all([
     SB.from('time_entries').select('*,projects(name),profiles(full_name)').order('entry_date',{ascending:false}),
     SB.from('projects').select('id,name').order('name'),
-    SB.from('tasks').select('id,title,project_id,estimated_hours,created_at,completed_at,status,responsabile_id,assignee_id').order('created_at',{ascending:false})
+    SB.from('tasks').select('id,title,project_id,estimated_hours,created_at,status,responsabile_id,assignee_id').order('created_at',{ascending:false})
   ]).then(function(rs){
+    if(rs[0].error){toast('Errore time entries: '+rs[0].error.message,'error');}
+    if(rs[1].error){toast('Errore progetti: '+rs[1].error.message,'error');}
+    if(rs[2].error){toast('Errore task: '+rs[2].error.message,'error');}
     var entries=rs[0].data||[]; PROJS=rs[1].data||[]; var alltasks=rs[2].data||[];
     var tot=0, byP={};
     for(var i=0;i<entries.length;i++){var h=Number(entries[i].hours||0);tot+=h;var pid=entries[i].project_id;byP[pid]=(byP[pid]||0)+h;}
@@ -1301,10 +1323,10 @@ function rTime() {
       var tk=alltasks[t];
       var prev=tk.estimated_hours?Number(tk.estimated_hours):null;
       var eff=null;
-      if(tk.completed_at && tk.created_at){
-        eff=calcolaOreEffettive(tk.created_at.split('T')[0], tk.completed_at);
-      } else if(tk.created_at){
-        eff=calcolaOreEffettive(tk.created_at.split('T')[0], oggiStr);
+      // Use due_date as end for completed tasks, today for open ones
+      var tEndDate = (tk.status === 'completato' && tk.due_date) ? tk.due_date : oggiStr;
+      if(tk.created_at){
+        eff=calcolaOreEffettive(tk.created_at.split('T')[0], tEndDate);
       }
       if(prev) totPrev+=prev;
       if(eff) totEff+=eff;
@@ -1346,6 +1368,9 @@ function rTime() {
       +'<div class="card"><div class="card-h"><span class="card-t">Registrazioni Manuali Recenti</span></div>'+(eh||'<div class="empty"><p>Nessuna registrazione</p></div>')+'</div></div>';
     var dtes=document.querySelectorAll('.dte-btn');
     for(var d=0;d<dtes.length;d++){dtes[d].addEventListener('click',function(){delTE(this.getAttribute('data-id'));});}
+  }).catch(function(err){
+    el('page').innerHTML='<div class="empty"><p>Errore caricamento: '+esc(err.message||String(err))+'</p></div>';
+    console.error('rTime error:', err);
   });
 }
 
@@ -1383,7 +1408,11 @@ function rFiles(){
     PROJS=rs[0].data||[]; var files=rs[1].data||[];
     var popts='<option value="">- Seleziona progetto -</option>';
     for(var i=0;i<PROJS.length;i++) popts+='<option value="'+PROJS[i].id+'">'+esc(PROJS[i].name)+'</option>';
-    var upHtml=canW()?'<div class="fg"><label class="fl">Commessa *</label><select class="fc" id="uppj" style="max-width:380px">'+popts+'</select><div style="font-size:11px;color:var(--mut2);margin-top:3px" id="fiinfo">Seleziona una commessa.</div></div>'
+    var upHtml=canW()?'<div class="fg2">'
+      +'<div class="fg"><label class="fl">Commessa *</label><select class="fc" id="uppj">'+popts+'</select></div>'
+      +'<div class="fg"><label class="fl">Cartella *</label><select class="fc" id="upcart"><option value="">-- Seleziona cartella --</option><option value=\"0-doc-esistente\">0 - Doc Esistente</option><option value=\"1-rilievo\">1 - Rilievo</option><option value=\"2-architettura\">2 - Architettura</option><option value=\"3-strutture\">3 - Strutture</option><option value=\"4-impianti-meccanici\">4 - Impianti Meccanici</option><option value=\"5-impianti-idrico-fognari\">5 - Impianti Idrico-Fognari</option><option value=\"6-impianti-elettrici-e-speciali\">6 - Impianti Elettrici e Speciali</option><option value=\"7-impianti-antincendio\">7 - Impianti Antincendio</option><option value=\"8-acustica\">8 - Acustica</option></select></div>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--mut2);margin-bottom:10px" id="fiinfo">Seleziona commessa e cartella.</div>'
       +'<div class="dz" id="dz"><div style="font-size:28px;color:var(--mut2);margin-bottom:8px">📤</div><div style="font-size:13px;color:var(--mut);line-height:1.5"><strong>Trascina file qui</strong> o clicca per selezionare<br><span style="font-size:12px">Cartella automatica per commessa in Supabase Storage</span></div></div>'
       +'<input type="file" id="ufi" multiple style="display:none"><div id="ul" style="margin-top:12px"></div>'
       :'<div style="color:var(--mut);font-size:13px;padding:8px 0">Solo Admin e Collaboratori possono caricare file.</div>';
@@ -1394,16 +1423,20 @@ function rFiles(){
       var funm=(fi.profiles&&fi.profiles.full_name)?fi.profiles.full_name:'-';
       var fdt=fi.created_at?fi.created_at.split('T')[0]:null;
       var fdb=isAd()?'<button class="btn btn-sm btn-d df-btn" data-id="'+fi.id+'" data-path="'+esc(fi.storage_path)+'" style="margin-left:4px">🗑</button>':'';
-      frows+='<tr><td style="font-weight:600">'+esc(fi.name)+'</td><td style="font-size:12px;color:var(--mut)">'+esc(fpnm)+'</td><td style="font-size:12px">'+esc(funm)+'</td><td style="font-size:12px;color:var(--mut)">'+fsize(fi.size_bytes)+'</td><td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td><td class="ac"><button class="btn btn-sm dlf-btn" data-path="'+esc(fi.storage_path)+'" data-name="'+esc(fi.name)+'">⬇</button>'+fdb+'</td></tr>';
+      frows+='<tr><td style="font-weight:600">'+esc(fi.name)+'</td><td style="font-size:12px;color:var(--mut)">'+esc(fpnm)+'</td>'+(function(){var fsp=(fi.storage_path||'').split('/');var fcl=fsp.length>=3?fsp[1]:'-';var fcm={'0-doc-esistente':'0-Doc','1-rilievo':'1-Rilievo','2-architettura':'2-Arch.','3-strutture':'3-Strutt.','4-impianti-meccanici':'4-Mecc.','5-impianti-idrico-fognari':'5-Idrico','6-impianti-elettrici-e-speciali':'6-Elett.','7-impianti-antincendio':'7-Antin.','8-acustica':'8-Acust.'};return '<td style="font-size:11px;color:var(--blue)">'+esc(fcm[fcl]||fcl)+'</td>';}())+'<td style="font-size:12px">'+esc(funm)+'</td><td style="font-size:12px;color:var(--mut)">'+fsize(fi.size_bytes)+'</td><td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td><td class="ac"><button class="btn btn-sm dlf-btn" data-path="'+esc(fi.storage_path)+'" data-name="'+esc(fi.name)+'">⬇</button>'+fdb+'</td></tr>';
     }
-    var ftbl=files.length?'<div class="tw"><table><thead><tr><th>Nome</th><th>Commessa</th><th>Caricato da</th><th>Dimensione</th><th>Data</th><th></th></tr></thead><tbody>'+frows+'</tbody></table></div>':'<div class="empty"><i>📁</i><p>Nessun file caricato.</p></div>';
+    var ftbl=files.length?'<div class="tw"><table><thead><tr><th>Nome</th><th>Commessa</th><th>Cartella</th><th>Caricato da</th><th>Dimensione</th><th>Data</th><th></th></tr></thead><tbody>'+frows+'</tbody></table></div>':'<div class="empty"><i>📁</i><p>Nessun file caricato.</p></div>';
     el('page').innerHTML='<div class="card mb16"><div class="card-h"><span class="card-t">Carica File</span></div>'+upHtml+'</div><div class="card"><div class="card-h"><span class="card-t">File Caricati</span></div>'+ftbl+'</div>';
     if(canW()){
-      el('uppj').addEventListener('change',function(){
-        var pid=this.value,ei=el('fiinfo'); if(!ei)return;
-        if(pid){var pnm='';for(var i=0;i<PROJS.length;i++){if(PROJS[i].id===pid){pnm=PROJS[i].name;break;}}ei.textContent='📁 Cartella: commesse/'+pid+'/ - '+pnm;ei.style.color='var(--blue)';}
-        else{ei.textContent='Seleziona una commessa.';ei.style.color='';}
-      });
+      function updFIInfo(){
+        var pid4=el('uppj')?el('uppj').value:'';
+        var cart4=el('upcart')?el('upcart').value:'';
+        var ei4=el('fiinfo'); if(!ei4)return;
+        if(pid4&&cart4){var pnm4='';for(var ix=0;ix<PROJS.length;ix++){if(PROJS[ix].id===pid4){pnm4=PROJS[ix].name;break;}}ei4.textContent='Percorso: commesse/'+pid4+'/'+cart4+'/ ('+pnm4+')';ei4.style.color='var(--blue)';}
+        else{ei4.textContent='Seleziona commessa e cartella.';ei4.style.color='';}
+      }
+      el('uppj').addEventListener('change', updFIInfo);
+      if(el('upcart')) el('upcart').addEventListener('change', updFIInfo);
       el('dz').addEventListener('click',function(){el('ufi').click();});
       el('dz').addEventListener('dragover',function(e){e.preventDefault();this.style.borderColor='var(--blue)';this.style.background='var(--bluelt)';});
       el('dz').addEventListener('dragleave',function(){this.style.borderColor='';this.style.background='';});
@@ -1416,16 +1449,19 @@ function rFiles(){
 }
 
 function hFiles(fileList){
-  var pid=el('uppj')?el('uppj').value:''; if(!pid){toast('Seleziona prima una commessa','error');return;}
-  for(var i=0;i<fileList.length;i++) upFile(fileList[i],pid);
+  var pid=el('uppj')?el('uppj').value:'';
+  var cart=el('upcart')?el('upcart').value:'';
+  if(!pid){toast('Seleziona prima una commessa','error');return;}
+  if(!cart){toast('Seleziona la cartella di destinazione','error');return;}
+  for(var i=0;i<fileList.length;i++) upFile(fileList[i],pid,cart);
 }
-function upFile(file,pid){
+function upFile(file,pid,cart){
   var ul=el('ul'); if(!ul)return;
   var uid='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
   var div=document.createElement('div'); div.className='urow'; div.id=uid;
   div.innerHTML='<span>📄</span><div style="flex:1;min-width:0"><div class="un">'+esc(file.name)+'</div><div class="uprg"><div class="upgf" id="'+uid+'p" style="width:5%"></div></div></div><span style="font-size:12px;color:var(--mut);min-width:58px;text-align:right">'+fsize(file.size)+'</span><span id="'+uid+'s" style="font-size:12px;color:var(--mut)">Caricamento...</span>';
   ul.appendChild(div);
-  var path=pid+'/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  var path=pid+(cart?'/'+cart:'')+'/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
   var pb=el(uid+'p'); if(pb)pb.style.width='20%';
   SB.storage.from('commesse').upload(path,file,{cacheControl:'3600',upsert:false}).then(function(r){
     var ss=el(uid+'s'),pb2=el(uid+'p');
