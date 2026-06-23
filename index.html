@@ -1105,6 +1105,7 @@ function drawKanban(pf) {
         +(tk.due_date?'<span style="font-size:11px;color:'+(od?'var(--red)':'var(--mut)')+(od?';font-weight:600':'')+'">📅 '+fdate(tk.due_date)+'</span>':'')
         +'</div>'
         +(tk.assignee_id?'<div style="display:flex;align-items:center;gap:5px;margin-top:6px">'+avHtml(tk.assignee_id,18)+'<span style="font-size:11px;color:var(--mut)">'+esc(un(tk.assignee_id))+'</span></div>':'')
+        +(canW()&&(isAd()||(ME&&tk.responsabile_id===ME.id))?'<div style="display:flex;gap:4px;margin-top:7px;justify-content:flex-end"><button class="btn btn-sm kcard-edit" data-id="'+tk.id+'" style="font-size:11px;padding:3px 8px">Modifica</button>'+(isAd()?'<button class="btn btn-sm btn-d kcard-del" data-id="'+tk.id+'" style="font-size:11px;padding:3px 8px">Elimina</button>':'')+'</div>':'')
         +'</div>';
     }
     if(canW()) html+='<button class="btn btn-sm kb-add" style="width:100%;margin-top:4px;justify-content:center;color:var(--mut)">+ Aggiungi</button>';
@@ -1113,6 +1114,8 @@ function drawKanban(pf) {
   html+='</div>';
   el('page').innerHTML=html;
   var eks=document.querySelectorAll('.et-k'); for(var e=0;e<eks.length;e++){eks[e].addEventListener('click',function(){editTask(this.getAttribute('data-id'));});}
+  var kce=document.querySelectorAll('.kcard-edit'); for(var ke=0;ke<kce.length;ke++){kce[ke].addEventListener('click',function(ev){ev.stopPropagation();editTask(this.getAttribute('data-id'));});}
+  var kcd=document.querySelectorAll('.kcard-del'); for(var kd=0;kd<kcd.length;kd++){kcd[kd].addEventListener('click',function(ev){ev.stopPropagation();delTask(this.getAttribute('data-id'));});}
   var kas=document.querySelectorAll('.kb-add'); for(var a=0;a<kas.length;a++){kas[a].addEventListener('click',function(){openNewTask(null);});}
 }
 
@@ -1545,12 +1548,20 @@ function rUsers(){
       var u=PROFS[i];
       var rc=u.role==='admin'?'<span class="chip chip-a">Admin</span>':u.role==='collaboratore'?'<span class="chip chip-c">Collaboratore</span>':'<span class="chip chip-v">Viewer</span>';
       var nm=u.full_name||'(senza nome)';
-      var bm=u.id===ME.id?'<button class="btn btn-sm" disabled>Tu</button>':'<button class="btn btn-sm eu-btn" data-id="'+u.id+'">Cambia Ruolo</button>';
+      var bm='';
+      if(u.id===ME.id){
+        bm='<button class="btn btn-sm" disabled>Tu</button>';
+      } else {
+        bm='<button class="btn btn-sm eu-btn" data-id="'+u.id+'">Cambia Ruolo</button>';
+        if(isAd()) bm+=' <button class="btn btn-sm btn-d du-btn" data-id="'+u.id+'" data-nm="'+esc(nm)+'">Rimuovi</button>';
+      }
       rows+='<tr><td><div style="display:flex;align-items:center;gap:8px"><span class="sav" style="width:30px;height:30px;font-size:11px">'+ini(nm)+'</span><span style="font-weight:600">'+esc(nm)+'</span></div></td><td>'+rc+'</td><td class="ac">'+bm+'</td></tr>';
     }
     el('page').innerHTML='<div class="card"><div class="tw"><table><thead><tr><th>Utente</th><th>Ruolo</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
     var eus=document.querySelectorAll('.eu-btn');
     for(var e=0;e<eus.length;e++){eus[e].addEventListener('click',function(){openEditUser(this.getAttribute('data-id'));});}
+    var dus=document.querySelectorAll('.du-btn');
+    for(var du=0;du<dus.length;du++){dus[du].addEventListener('click',function(){deleteUser(this.getAttribute('data-id'),this.getAttribute('data-nm'));});}
   });
 }
 
@@ -1623,6 +1634,15 @@ function assegnaRuolo() {
   }).catch(function(e){
     setLoading('nu-btn',false,'Assegna Ruolo');
     if(errEl){errEl.textContent='Errore: '+e.message;errEl.style.display='block';}
+  });
+}
+
+function deleteUser(uid, nm) {
+  if (!confirm('Rimuovere ' + nm + ' dal sistema?')) return;
+  SB.from('profiles').delete().eq('id', uid).then(function(r) {
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    toast('Utente rimosso', 'success');
+    rUsers();
   });
 }
 
@@ -1878,7 +1898,8 @@ function drawFasi(proj, fasi, sottofasi) {
       if (sf.stato === 'completata' && canW()) {
         notifBtn = '<button class="btn btn-sm notif-btn" data-sfid="'+sf.id+'" style="background:var(--grnlt);color:var(--grn);border-color:transparent;margin-left:4px">&#128231; Notifica</button>';
       }
-      var editBtn = canW() ? '<button class="btn btn-sm esf-btn" data-sfid="'+sf.id+'" data-faseid="'+fase.id+'" data-disc="'+disc+'" data-ftype="'+ft+'">&#9999;&#65039;</button>' + notifBtn : '';
+      var editBtn = canW() ? '<button class="btn btn-sm esf-btn" data-sfid="'+sf.id+'" data-faseid="'+fase.id+'" data-disc="'+disc+'" data-ftype="'+ft+'">Modifica</button>' + notifBtn : '';
+      var delSfBtn = isAd() ? '<button class="btn btn-sm btn-d dsf-btn" data-sfid="'+sf.id+'" data-faseid="'+fase.id+'" data-disc="'+disc+'">Elimina</button>' : '';
 
       html += '<tr style="'+rowOpacity+'">';
       html += '<td><span style="font-weight:600">'+DISC_LABELS[disc]+'</span></td>';
@@ -1887,7 +1908,7 @@ function drawFasi(proj, fasi, sottofasi) {
       html += '<td style="font-size:12px;color:var(--mut)">'+fdate(sf.data_inizio)+'</td>';
       html += '<td style="font-size:12px;color:'+(isOD(sf.data_fine_prevista)?'var(--red)':'var(--mut)')+'">'+fdate(sf.data_fine_prevista)+'</td>';
       html += '<td style="text-align:center"><span style="font-size:12px;color:'+(sf.attiva?'var(--grn)':'var(--mut)')+'">'+(sf.attiva?'Si':'No')+'</span></td>';
-      if (canW()) html += '<td class="ac">'+editBtn+'</td>';
+      if (canW()) html += '<td class="ac" style="white-space:nowrap">'+editBtn+' '+(isAd()?delSfBtn:'')+'</td>';
       html += '</tr>';
     }
     html += '</tbody></table></div>';
@@ -1938,6 +1959,8 @@ function drawFasi(proj, fasi, sottofasi) {
 
   var esfbs = document.querySelectorAll('.esf-btn');
   for (var j=0;j<esfbs.length;j++) { esfbs[j].addEventListener('click', function(){ openEditSF(this.getAttribute('data-sfid'),this.getAttribute('data-faseid'),this.getAttribute('data-disc'),this.getAttribute('data-ftype')); }); }
+  var dsfbs = document.querySelectorAll('.dsf-btn');
+  for (var ds=0;ds<dsfbs.length;ds++) { dsfbs[ds].addEventListener('click', function(){ delSottofase(this.getAttribute('data-sfid'),this.getAttribute('data-disc')); }); }
 
   var cfbs = document.querySelectorAll('.cf-btn');
   for (var k=0;k<cfbs.length;k++) { cfbs[k].addEventListener('click', function(){ completaFase(this.getAttribute('data-fid'),this.getAttribute('data-ft'),this.getAttribute('data-pid')); }); }
@@ -2268,6 +2291,16 @@ function inviaNotificaSF(sfid) {
 }
 
 // ── COMPLETA FASE INTERA ──
+function delSottofase(sfid, disc) {
+  var discLbl = disc && DISC_LABELS[disc] ? DISC_LABELS[disc] : disc;
+  if (!confirm('Eliminare la sottofase ' + discLbl + '? Questa operazione non puo essere annullata.')) return;
+  SB.from('project_sottofasi').delete().eq('id', sfid).then(function(r) {
+    if (r.error) { toast(r.error.message, 'error'); return; }
+    toast('Sottofase eliminata');
+    loadFasiProgetto(SF_PROJ_ID);
+  });
+}
+
 function completaFase(fid, ft, pid) {
   if (!confirm('Segnare la fase '+FASI_LABELS[ft]+' come completata?')) return;
   SB.from('project_fasi').update({stato:'completata', data_completamento: new Date().toISOString().split('T')[0]}).eq('id', fid).then(function(r){
