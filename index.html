@@ -204,6 +204,15 @@ tbody tr:hover td { background: #f0f4f9; }
       <a href="#" id="areglink" style="font-size:12px;color:var(--blue)">Registrati</a>
     </p>
     <!-- REGISTER PANEL -->
+    <!-- RESET PASSWORD PANEL -->
+    <div id="resetpanel" style="display:none;margin-top:20px;border-top:1px solid var(--bord);padding-top:20px">
+      <div style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:14px">Imposta Nuova Password</div>
+      <div class="aerr" id="rperr"></div>
+      <div class="fg"><label class="fl">Nuova Password *</label><input class="fc" type="password" id="rppass" placeholder="Minimo 8 caratteri"></div>
+      <div class="fg"><label class="fl">Conferma Password *</label><input class="fc" type="password" id="rppass2" placeholder="Ripeti la password"></div>
+      <button class="btn btn-p btn-full" id="rpbtn">Salva Nuova Password</button>
+    </div>
+
     <div id="regpanel" style="display:none;margin-top:20px;border-top:1px solid var(--bord);padding-top:20px">
       <div style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:14px">Crea Account</div>
       <div class="aerr" id="rerr"></div>
@@ -551,6 +560,8 @@ function setLoading(id, on) {
 // EVENTS
 document.addEventListener('DOMContentLoaded', function() {
   el('abtn').addEventListener('click', doLogin);
+  if (el('rpbtn')) el('rpbtn').addEventListener('click', doResetPassword);
+  if (el('rppass2')) el('rppass2').addEventListener('keydown', function(e){ if(e.key==='Enter') doResetPassword(); });
   el('apass').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
   el('aforgot').addEventListener('click', function(e){ e.preventDefault(); doForgot(); });
   el('areglink').addEventListener('click', function(e){
@@ -609,10 +620,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Init Supabase session
   SB.auth.getSession().then(function(r) {
-    if (r.data && r.data.session) boot();
+    if (r.data && r.data.session) {
+      // Check if this is a password recovery session
+      if (r.data.session.user && window.location.hash.indexOf('type=recovery') >= 0) {
+        showResetPanel();
+      } else {
+        boot();
+      }
+    }
   });
-  SB.auth.onAuthStateChange(function(ev) {
-    if (ev==='SIGNED_OUT') { ME=null; PROF=null; el('app').classList.remove('show'); el('auth').classList.remove('hide'); }
+  SB.auth.onAuthStateChange(function(ev, session) {
+    if (ev === 'PASSWORD_RECOVERY') {
+      // Supabase has verified the recovery token - show new password form
+      showResetPanel();
+    } else if (ev === 'SIGNED_OUT') {
+      ME=null; PROF=null;
+      el('app').classList.remove('show');
+      el('auth').classList.remove('hide');
+      hideResetPanel();
+    } else if (ev === 'USER_UPDATED') {
+      // Password was changed successfully - proceed to app
+      toast('Password aggiornata con successo!', 'success');
+      hideResetPanel();
+      boot();
+    }
   });
 });
 
@@ -644,6 +675,53 @@ function doForgot() {
 
 function showRegErr(msg) { var e=el('rerr'); e.textContent=msg; e.style.display='block'; }
 function hideRegErr() { var e=el('rerr'); if(e) e.style.display='none'; }
+
+function showResetPanel() {
+  // Hide login fields, show reset panel
+  el('aemail').closest('.fg') && (el('aemail').closest('.fg').style.display = 'none');
+  el('apass').closest('.fg') && (el('apass').closest('.fg').style.display = 'none');
+  el('abtn').style.display = 'none';
+  var fp = el('auth').querySelector('p');
+  if (fp) fp.style.display = 'none';
+  if (el('regpanel')) el('regpanel').style.display = 'none';
+  if (el('resetpanel')) {
+    el('resetpanel').style.display = 'block';
+    el('rppass').focus();
+  }
+  hideErr();
+}
+
+function hideResetPanel() {
+  if (el('resetpanel')) el('resetpanel').style.display = 'none';
+  var emailFg = el('aemail') ? el('aemail').closest('.fg') : null;
+  var passFg = el('apass') ? el('apass').closest('.fg') : null;
+  if (emailFg) emailFg.style.display = '';
+  if (passFg) passFg.style.display = '';
+  el('abtn').style.display = '';
+  var fp = el('auth') ? el('auth').querySelector('p') : null;
+  if (fp) fp.style.display = '';
+}
+
+function showRpErr(msg) { var e=el('rperr'); if(e){e.textContent=msg;e.style.display='block';} }
+function hideRpErr() { var e=el('rperr'); if(e)e.style.display='none'; }
+
+function doResetPassword() {
+  hideRpErr();
+  var pass = el('rppass') ? el('rppass').value : '';
+  var pass2 = el('rppass2') ? el('rppass2').value : '';
+  if (!pass || pass.length < 8) { showRpErr('La password deve essere di almeno 8 caratteri.'); return; }
+  if (pass !== pass2) { showRpErr('Le password non coincidono.'); return; }
+  setLoading('rpbtn', true);
+  SB.auth.updateUser({ password: pass }).then(function(r) {
+    setLoading('rpbtn', false, 'Salva Nuova Password');
+    if (r.error) { showRpErr('Errore: ' + r.error.message); return; }
+    // USER_UPDATED event will be fired and handled by onAuthStateChange
+    hideRpErr();
+  }).catch(function(e) {
+    setLoading('rpbtn', false, 'Salva Nuova Password');
+    showRpErr('Errore: ' + e.message);
+  });
+}
 
 function doRegister() {
   hideRegErr();
