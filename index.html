@@ -778,14 +778,30 @@ function boot() {
   SB.auth.getUser().then(function(r) {
     if (!r.data || !r.data.user) return;
     ME = r.data.user;
+    // Email admin principale: forza sempre approved=true e role=admin prima di tutto
+    var ADMIN_EMAIL = 'f.stortoni@studiotecnicoscs.com';
+    var isMasterAdmin = ME.email && ME.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    if (isMasterAdmin) {
+      // Aggiorna profilo in background per sicurezza
+      SB.from('profiles').upsert({
+        id: ME.id,
+        full_name: 'Francesco Stortoni',
+        email: ME.email,
+        role: 'admin',
+        approved: true
+      }, {onConflict: 'id'}).then(function(){});
+    }
+
     SB.from('profiles').select('*').eq('id',ME.id).single().then(function(r2) {
       PROF = r2.data;
+      // Se master admin e il profilo non e ancora aggiornato, forza i valori localmente
+      if (isMasterAdmin) {
+        if (!PROF) PROF = {id: ME.id, full_name: 'Francesco Stortoni', role: 'admin', approved: true};
+        PROF.approved = true;
+        PROF.role = 'admin';
+      }
 
-      // APPROVAZIONE: se il profilo non e approvato, mostra schermata di attesa
-      // Se 'approved' e undefined (colonna non ancora aggiunta) tratta come approvato (backward compat)
-      // L'email amministratore principale bypassa sempre il controllo
-      var ADMIN_EMAIL = 'f.stortoni@studiotecnicoscs.com';
-      var isMasterAdmin = ME.email && ME.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      // APPROVAZIONE: controlla approved per tutti gli altri utenti
       var isApprovedUser = isMasterAdmin || (!PROF ? false : (PROF.approved === undefined || PROF.approved === null ? true : PROF.approved === true || PROF.approved === 'true' || PROF.approved === 1));
       if (!PROF || !isApprovedUser) {
         el('auth').classList.add('hide');
