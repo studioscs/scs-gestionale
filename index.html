@@ -783,7 +783,10 @@ function boot() {
 
       // APPROVAZIONE: se il profilo non e approvato, mostra schermata di attesa
       // Se 'approved' e undefined (colonna non ancora aggiunta) tratta come approvato (backward compat)
-      var isApprovedUser = !PROF ? false : (PROF.approved === undefined || PROF.approved === null ? true : PROF.approved === true || PROF.approved === 'true' || PROF.approved === 1);
+      // L'email amministratore principale bypassa sempre il controllo
+      var ADMIN_EMAIL = 'f.stortoni@studiotecnicoscs.com';
+      var isMasterAdmin = ME.email && ME.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      var isApprovedUser = isMasterAdmin || (!PROF ? false : (PROF.approved === undefined || PROF.approved === null ? true : PROF.approved === true || PROF.approved === 'true' || PROF.approved === 1));
       if (!PROF || !isApprovedUser) {
         el('auth').classList.add('hide');
         el('app').classList.add('show');
@@ -799,6 +802,12 @@ function boot() {
         var we = el('wait-email');
         if (we) we.innerHTML = '&#128231; <b>' + esc(ME.email) + '</b>';
         return;
+      }
+
+      // Se master admin ma profilo non approvato, auto-approva e imposta admin
+      if (isMasterAdmin && PROF && (!PROF.approved || PROF.role !== 'admin')) {
+        SB.from('profiles').update({approved: true, role: 'admin'}).eq('id', ME.id).then(function(){});
+        PROF.approved = true; PROF.role = 'admin';
       }
 
       // Approvato: carica tutto e mostra app
