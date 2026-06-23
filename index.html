@@ -970,6 +970,7 @@ function editProj(id) {
 }
 
 function saveProject() {
+  if(!canW()){toast('Permesso negato.','error');return;}
   var name=el('pp-n').value.trim(); if(!name){toast('Nome obbligatorio','error');return;}
   setLoading('sp-btn',true);
   var pay={name:name,client:el('pp-c').value.trim()||null,status:el('pp-s').value,owner_id:el('pp-o').value||null,start_date:el('pp-si').value||null,end_date:el('pp-sf').value||null,amount:el('pp-im').value||null,cig:el('pp-cig').value.trim()||null,description:el('pp-d').value.trim()||null,created_by:ME.id};
@@ -1004,6 +1005,7 @@ function saveProject() {
 }
 
 function delProj(id) {
+  if(!isAd()){toast('Solo Admin puo eliminare progetti.','error');return;}
   if(!confirm('Eliminare questo progetto con tutti i task, le ore e i file?')) return;
   SB.from('projects').delete().eq('id',id).then(function(r){
     if(r.error){toast(r.error.message,'error');return;}
@@ -1515,6 +1517,7 @@ function loadTeTask(){
   });
 }
 function saveTE(){
+  if(!canW()){toast('Permesso negato.','error');return;}
   var h=parseFloat(el('te-h').value), dt=el('te-dt').value;
   if(!h||h<=0){toast('Ore non valide','error');return;} if(!dt){toast('Data obbligatoria','error');return;}
   setLoading('ste-btn',true);
@@ -1524,6 +1527,7 @@ function saveTE(){
   });
 }
 function delTE(id){
+  if(!isAd()){toast('Solo Admin puo eliminare registrazioni.','error');return;}
   if(!confirm('Eliminare questa registrazione?'))return;
   SB.from('time_entries').delete().eq('id',id).then(function(r){if(r.error){toast(r.error.message,'error');return;}toast('Eliminata');rTime();});
 }
@@ -1575,6 +1579,7 @@ function rFiles(){
 }
 
 function hFiles(fileList){
+  if(!canW()){toast('Permesso negato.','error');return;}
   var pid=el('uppj')?el('uppj').value:'';
   var cart=el('upcart')?el('upcart').value:'';
   if(!pid){toast('Seleziona prima una commessa','error');return;}
@@ -1608,6 +1613,7 @@ function dlFile(path,name){
   });
 }
 function delFile(id,path){
+  if(!isAd()){toast('Solo Admin puo eliminare file.','error');return;}
   if(!confirm('Eliminare questo file?'))return;
   SB.storage.from('commesse').remove([path]).then(function(){
     SB.from('files').delete().eq('id',id).then(function(r){if(r.error){toast(r.error.message,'error');return;}toast('File eliminato');rFiles();});
@@ -1659,6 +1665,7 @@ function openNewUser() {
 var NU_FOUND_ID = null;
 
 function cercaUtente() {
+  if(!isAd()){toast('Solo Admin puo aggiungere utenti.','error');return;}
   var email = el('nu-email') ? el('nu-email').value.trim().toLowerCase() : '';
   var errEl = el('nu-err'); var okEl = el('nu-ok');
   if(errEl)errEl.style.display='none';
@@ -1693,6 +1700,7 @@ function cercaUtente() {
 }
 
 function assegnaRuolo() {
+  if(!isAd()){toast('Solo Admin puo assegnare ruoli.','error');return;}
   var errEl = el('nu-err'); var okEl = el('nu-ok');
   if(errEl)errEl.style.display='none';
   if(okEl)okEl.style.display='none';
@@ -1716,6 +1724,7 @@ function assegnaRuolo() {
 }
 
 function deleteUser(uid, nm) {
+  if(!isAd()){toast('Solo Admin puo rimuovere utenti.','error');return;}
   if (!confirm('Rimuovere ' + nm + ' dal sistema?')) return;
   SB.from('profiles').delete().eq('id', uid).then(function(r) {
     if (r.error) { toast(r.error.message, 'error'); return; }
@@ -1729,6 +1738,7 @@ function openEditUser(id){
   EUID=id; el('mu-n').value=u.full_name; el('mu-r').value=u.role; openM('m-user');
 }
 function saveUserRole(){
+  if(!isAd()){toast('Solo Admin puo modificare i ruoli.','error');return;}
   setLoading('su-btn',true);
   SB.from('profiles').update({role:el('mu-r').value}).eq('id',EUID).then(function(r){
     setLoading('su-btn',false); if(r.error){toast(r.error.message,'error');return;}
@@ -2070,6 +2080,7 @@ function openEditFase(fid, ft) {
 }
 
 function saveFase(fid) {
+  if(!canW()){toast('Permesso negato.','error');return;}
   setLoading('sf-btn', true);
   var pay = {stato: el('ef-stato').value, data_inizio: el('ef-di').value||null, data_fine_prevista: el('ef-df').value||null, note: el('ef-note').value.trim()||null};
   if (pay.stato === 'completata') pay.data_completamento = new Date().toISOString().split('T')[0];
@@ -2163,6 +2174,7 @@ function showNotifPreview(sfid, faseid, disc, ftype) {
 }
 
 function saveSF(sfid) {
+  if(!canW()){toast('Permesso negato.','error');return;}
   var nuovoStato = el('sf-stato').value;
   setLoading('ssf-btn', true);
   var pay = {
@@ -2248,6 +2260,7 @@ function drawFaseTasks(faseId, tasks) {
 }
 
 function approvaTask(tid, faseId) {
+  if(!canW()){toast('Permesso negato.','error');return;}
   if (!confirm('Approvare e chiudere questo task?')) return;
   var oggi = new Date().toISOString().split('T')[0];
   SB.from('tasks').update({status:'completato', completed_at: oggi}).eq('id',tid).then(function(r){
@@ -2258,6 +2271,7 @@ function approvaTask(tid, faseId) {
 }
 
 function delTaskFase(tid, faseId) {
+  if(!isAd()){toast('Solo Admin puo eliminare task.','error');return;}
   if (!confirm('Eliminare questo task?')) return;
   SB.from('tasks').delete().eq('id',tid).then(function(r){
     if(r.error){toast(r.error.message,'error');return;}
@@ -2370,6 +2384,7 @@ function inviaNotificaSF(sfid) {
 
 // ── COMPLETA FASE INTERA ──
 function delSottofase(sfid, disc) {
+  if(!isAd()){toast('Solo Admin puo eliminare sottofasi.','error');return;}
   var discLbl = disc && DISC_LABELS[disc] ? DISC_LABELS[disc] : disc;
   if (!confirm('Eliminare la sottofase ' + discLbl + '? Questa operazione non puo essere annullata.')) return;
   SB.from('project_sottofasi').delete().eq('id', sfid).then(function(r) {
@@ -2380,6 +2395,7 @@ function delSottofase(sfid, disc) {
 }
 
 function completaFase(fid, ft, pid) {
+  if(!canW()){toast('Permesso negato.','error');return;}
   if (!confirm('Segnare la fase '+FASI_LABELS[ft]+' come completata?')) return;
   SB.from('project_fasi').update({stato:'completata', data_completamento: new Date().toISOString().split('T')[0]}).eq('id', fid).then(function(r){
     if (r.error) { toast(r.error.message,'error'); return; }
