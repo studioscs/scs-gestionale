@@ -390,37 +390,37 @@ tbody tr:hover td { background: #f0f4f9; }
   </div>
 </div>
 
-<!-- MODAL NUOVO UTENTE -->
+<!-- MODAL NUOVO MEMBRO (cerca utente registrato) -->
 <div class="ov" id="m-newuser">
   <div class="modal modal-sm">
-    <div class="mh"><h3>Crea Nuovo Utente</h3><button class="mx" data-close="m-newuser">&#x2715;</button></div>
+    <div class="mh"><h3>Aggiungi Utente al Team</h3><button class="mx" data-close="m-newuser">&#x2715;</button></div>
     <div class="mb">
-      <div class="ibox">&#128100; L'utente ricevera una email di conferma account. Dopo la conferma potra accedere con le credenziali impostate qui.</div>
-      <div class="fg2">
-        <div class="fg"><label class="fl">Nome *</label><input class="fc" id="nu-nome" placeholder="Es. Mario"></div>
-        <div class="fg"><label class="fl">Cognome *</label><input class="fc" id="nu-cogn" placeholder="Es. Rossi"></div>
-      </div>
-      <div class="fg"><label class="fl">Email *</label><input class="fc" type="email" id="nu-email" placeholder="mario.rossi@studiotecnicoscs.com"></div>
-      <div class="fg"><label class="fl">Password Temporanea *</label>
+      <div class="ibox">L'utente deve essersi gia registrato all'app tramite la schermata di login (tasto Registrati). Inserisci la sua email di registrazione e premi Cerca: nome e cognome verranno precompilati.</div>
+      <div class="fg"><label class="fl">Email utente registrato *</label>
         <div style="display:flex;gap:8px;align-items:center">
-          <input class="fc" type="text" id="nu-pass" placeholder="Min. 8 caratteri" style="flex:1">
-          <button class="btn btn-sm" id="nu-gen-btn" type="button">Genera</button>
+          <input class="fc" type="email" id="nu-email" placeholder="email@esempio.it" style="flex:1">
+          <button class="btn btn-sm" id="nu-cerca-btn" type="button">Cerca</button>
         </div>
-        <div style="font-size:11px;color:var(--mut);margin-top:3px">Comunica questa password all'utente — potranno cambiarla dopo il primo accesso.</div>
       </div>
-      <div class="fg"><label class="fl">Ruolo</label>
-        <select class="fc" id="nu-role">
-          <option value="viewer">Viewer (solo lettura)</option>
-          <option value="collaboratore" selected>Collaboratore (legge e modifica)</option>
-          <option value="admin">Admin (accesso completo)</option>
-        </select>
+      <div id="nu-found" style="display:none">
+        <div class="fg2">
+          <div class="fg"><label class="fl">Nome</label><input class="fc" id="nu-nome" disabled></div>
+          <div class="fg"><label class="fl">Cognome</label><input class="fc" id="nu-cogn" disabled></div>
+        </div>
+        <div class="fg"><label class="fl">Ruolo *</label>
+          <select class="fc" id="nu-role">
+            <option value="viewer">Viewer (solo lettura)</option>
+            <option value="collaboratore" selected>Collaboratore (legge e modifica)</option>
+            <option value="admin">Admin (accesso completo)</option>
+          </select>
+        </div>
       </div>
       <div style="display:none;background:var(--redlt);color:var(--reddk);border:1px solid #f5c6cb;border-radius:6px;padding:9px 12px;font-size:13px;margin-top:8px" id="nu-err"></div>
       <div style="display:none;background:var(--grnlt);color:var(--grndk);border:1px solid #a3cfbb;border-radius:6px;padding:9px 12px;font-size:13px;margin-top:8px" id="nu-ok"></div>
     </div>
     <div class="mf">
       <button class="btn" data-close="m-newuser">Chiudi</button>
-      <button class="btn btn-p" id="nu-btn">Crea Utente</button>
+      <button class="btn btn-p" id="nu-btn" style="display:none">Assegna Ruolo</button>
     </div>
   </div>
 </div>
@@ -570,17 +570,14 @@ document.addEventListener('DOMContentLoaded', function() {
   el('st-btn').addEventListener('click', saveTask);
   el('ste-btn').addEventListener('click', saveTE);
   el('su-btn').addEventListener('click', saveUserRole);
-  // New user modal
+  // New member modal (search registered user)
   document.addEventListener('click', function(e){
-    if(e.target && e.target.id==='nu-btn') createUser();
-    if(e.target && e.target.id==='nu-gen-btn'){
-      var p=generatePassword();
-      el('nu-pass').value=p;
-    }
+    if(e.target && e.target.id==='nu-cerca-btn') cercaUtente();
+    if(e.target && e.target.id==='nu-btn') assegnaRuolo();
   });
-  // wire data-close for new modal
-  document.querySelectorAll('[data-close="m-newuser"]').forEach(function(b){
-    b.addEventListener('click',function(){closeM('m-newuser');el('nu-btn').style.display='';});
+  // Enter key in email field triggers search
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Enter' && e.target && e.target.id==='nu-email'){ e.preventDefault(); cercaUtente(); }
   });
   el('te-p').addEventListener('change', loadTeTask);
 
@@ -1558,57 +1555,76 @@ function rUsers(){
 }
 
 function openNewUser() {
-  var ne=el('nu-nome'),ce=el('nu-cogn'),ee=el('nu-email'),pe=el('nu-pass');
-  if(ne)ne.value=''; if(ce)ce.value=''; if(ee)ee.value=''; if(pe)pe.value='';
+  if(el('nu-email'))el('nu-email').value='';
+  if(el('nu-nome'))el('nu-nome').value='';
+  if(el('nu-cogn'))el('nu-cogn').value='';
   if(el('nu-role'))el('nu-role').value='collaboratore';
+  if(el('nu-found'))el('nu-found').style.display='none';
+  if(el('nu-btn'))el('nu-btn').style.display='none';
   if(el('nu-err'))el('nu-err').style.display='none';
   if(el('nu-ok'))el('nu-ok').style.display='none';
-  if(el('nu-btn'))el('nu-btn').style.display='';
+  NU_FOUND_ID=null;
   openM('m-newuser');
 }
 
-function generatePassword() {
-  var chars='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#!';
-  var pass='';
-  for(var i=0;i<12;i++) pass+=chars.charAt(Math.floor(Math.random()*chars.length));
-  return pass;
-}
+var NU_FOUND_ID = null;
 
-function createUser() {
-  var nome=el('nu-nome')?el('nu-nome').value.trim():'';
-  var cogn=el('nu-cogn')?el('nu-cogn').value.trim():'';
-  var email=el('nu-email')?el('nu-email').value.trim():'';
-  var pass=el('nu-pass')?el('nu-pass').value.trim():'';
-  var role=el('nu-role')?el('nu-role').value:'collaboratore';
-  var errEl=el('nu-err'); var okEl=el('nu-ok');
-  if(errEl)errEl.style.display='none'; if(okEl)okEl.style.display='none';
-  if(!nome){if(errEl){errEl.textContent='Inserire il nome.';errEl.style.display='block';}return;}
-  if(!cogn){if(errEl){errEl.textContent='Inserire il cognome.';errEl.style.display='block';}return;}
-  if(!email){if(errEl){errEl.textContent='Inserire la email.';errEl.style.display='block';}return;}
-  if(!pass||pass.length<8){if(errEl){errEl.textContent='Password di almeno 8 caratteri.';errEl.style.display='block';}return;}
-  setLoading('nu-btn',true);
-  var fullName=nome+' '+cogn;
-  SB.auth.signUp({email:email,password:pass,options:{data:{full_name:fullName,role:role}}}).then(function(r){
-    setLoading('nu-btn',false,'Crea Utente');
-    if(r.error){if(errEl){errEl.textContent='Errore: '+r.error.message;errEl.style.display='block';}return;}
-    if(r.data&&r.data.user&&r.data.user.identities&&r.data.user.identities.length===0){
-      if(errEl){errEl.textContent='Questa email e gia registrata.';errEl.style.display='block';}return;
+function cercaUtente() {
+  var email = el('nu-email') ? el('nu-email').value.trim().toLowerCase() : '';
+  var errEl = el('nu-err'); var okEl = el('nu-ok');
+  if(errEl)errEl.style.display='none';
+  if(okEl)okEl.style.display='none';
+  if(el('nu-found'))el('nu-found').style.display='none';
+  if(el('nu-btn'))el('nu-btn').style.display='none';
+  NU_FOUND_ID=null;
+  if(!email){if(errEl){errEl.textContent='Inserire la email da cercare.';errEl.style.display='block';}return;}
+  setLoading('nu-cerca-btn',true);
+  SB.from('profiles').select('id,full_name,email,role').ilike('email',email).then(function(r){
+    setLoading('nu-cerca-btn',false,'Cerca');
+    if(r.error){if(errEl){errEl.textContent='Errore ricerca: '+r.error.message;errEl.style.display='block';}return;}
+    var found = r.data && r.data.length ? r.data[0] : null;
+    if(!found){
+      if(errEl){errEl.textContent='Nessun utente registrato con questa email. L&#39;utente deve prima registrarsi dalla schermata di login.';errEl.style.display='block';}
+      return;
     }
-    if(r.data&&r.data.user&&r.data.user.id){
-      SB.from('profiles').upsert({id:r.data.user.id,full_name:fullName,role:role},{onConflict:'id'}).then(function(){});
-    }
-    if(okEl){
-      okEl.innerHTML='<b>Utente creato!</b><br><span style="font-size:12px">Email: <b>'+esc(email)+'</b><br>Password: <b>'+esc(pass)+'</b><br>Ruolo: <b>'+esc(role)+'</b><br><br>Comunica queste credenziali al nuovo utente. Se richiesto dovra confermare l&#39;email prima di accedere.</span>';
-      okEl.style.display='block';
-    }
-    if(el('nu-btn'))el('nu-btn').style.display='none';
-    SB.from('profiles').select('*').order('full_name').then(function(rp){if(rp.data)PROFS=rp.data;});
+    NU_FOUND_ID = found.id;
+    // Split full_name into nome cognome
+    var parts = (found.full_name||'').split(' ');
+    var nome = parts.length ? parts[0] : '';
+    var cogn = parts.length > 1 ? parts.slice(1).join(' ') : '';
+    if(el('nu-nome'))el('nu-nome').value = nome;
+    if(el('nu-cogn'))el('nu-cogn').value = cogn;
+    if(el('nu-role'))el('nu-role').value = found.role || 'collaboratore';
+    if(el('nu-found'))el('nu-found').style.display='block';
+    if(el('nu-btn'))el('nu-btn').style.display='';
   }).catch(function(e){
-    setLoading('nu-btn',false,'Crea Utente');
+    setLoading('nu-cerca-btn',false,'Cerca');
     if(errEl){errEl.textContent='Errore: '+e.message;errEl.style.display='block';}
   });
 }
 
+function assegnaRuolo() {
+  var errEl = el('nu-err'); var okEl = el('nu-ok');
+  if(errEl)errEl.style.display='none';
+  if(okEl)okEl.style.display='none';
+  if(!NU_FOUND_ID){if(errEl){errEl.textContent='Cerca prima un utente valido.';errEl.style.display='block';}return;}
+  var role = el('nu-role') ? el('nu-role').value : 'collaboratore';
+  setLoading('nu-btn',true);
+  SB.from('profiles').update({role:role}).eq('id',NU_FOUND_ID).then(function(r){
+    setLoading('nu-btn',false,'Assegna Ruolo');
+    if(r.error){if(errEl){errEl.textContent='Errore: '+r.error.message;errEl.style.display='block';}return;}
+    if(okEl){
+      okEl.innerHTML='<b>Ruolo assegnato!</b><br><span style="font-size:12px">L&#39;utente ora ha il ruolo: <b>'+esc(role)+'</b></span>';
+      okEl.style.display='block';
+    }
+    toast('Ruolo assegnato con successo','success');
+    SB.from('profiles').select('*').order('full_name').then(function(rp){if(rp.data)PROFS=rp.data;});
+    setTimeout(function(){ closeM('m-newuser'); rUsers(); }, 1500);
+  }).catch(function(e){
+    setLoading('nu-btn',false,'Assegna Ruolo');
+    if(errEl){errEl.textContent='Errore: '+e.message;errEl.style.display='block';}
+  });
+}
 
 function openEditUser(id){
   var u=null; for(var i=0;i<PROFS.length;i++){if(PROFS[i].id===id){u=PROFS[i];break;}} if(!u)return;
