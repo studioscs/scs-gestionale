@@ -273,6 +273,17 @@ tbody tr:hover td { background: #f0f4f9; }
       </div>
       <div id="notif-list"></div>
     </div>
+    <!-- WAITING APPROVAL SCREEN -->
+    <div id="wait-screen" style="display:none;flex:1;align-items:center;justify-content:center;background:var(--bg)">
+      <div style="text-align:center;max-width:420px;padding:40px">
+        <div style="font-size:48px;margin-bottom:16px">&#9203;</div>
+        <h2 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:12px">Account in attesa di approvazione</h2>
+        <p style="font-size:14px;color:var(--mut);line-height:1.6;margin-bottom:20px">La tua registrazione e andata a buon fine. Il tuo account deve essere approvato dall&#39;amministratore prima di poter accedere alla piattaforma.</p>
+        <p style="font-size:13px;color:var(--mut)">Comunica la tua email all&#39;amministratore di Studio SCS e attendi la conferma.</p>
+        <div style="margin-top:24px;padding:12px 16px;background:var(--bluelt);border-radius:8px;font-size:13px;color:#0C3D78" id="wait-email"></div>
+        <button class="btn" style="margin-top:20px" onclick="SB.auth.signOut()">&#8592; Torna al Login</button>
+      </div>
+    </div>
     <div id="page"><div class="empty"><i>⏳</i><p>Caricamento...</p></div></div>
   </div>
 </div>
@@ -769,21 +780,44 @@ function boot() {
     ME = r.data.user;
     SB.from('profiles').select('*').eq('id',ME.id).single().then(function(r2) {
       PROF = r2.data;
+
+      // APPROVAZIONE: se il profilo non e approvato, mostra schermata di attesa
+      // Se 'approved' e undefined (colonna non ancora aggiunta) tratta come approvato (backward compat)
+      var isApprovedUser = !PROF ? false : (PROF.approved === undefined || PROF.approved === null ? true : PROF.approved === true || PROF.approved === 'true' || PROF.approved === 1);
+      if (!PROF || !isApprovedUser) {
+        el('auth').classList.add('hide');
+        el('app').classList.add('show');
+        // Show wait screen, hide main content
+        var ws = el('wait-screen');
+        var pg = el('page');
+        var top = el('top');
+        var nb = el('notif-bar');
+        if (ws) ws.style.display = 'flex';
+        if (pg) pg.style.display = 'none';
+        if (top) top.style.display = 'none';
+        if (nb) nb.style.display = 'none';
+        var we = el('wait-email');
+        if (we) we.innerHTML = '&#128231; <b>' + esc(ME.email) + '</b>';
+        return;
+      }
+
+      // Approvato: carica tutto e mostra app
       SB.from('profiles').select('*').order('full_name').then(function(r3) {
         PROFS = r3.data || [];
         el('auth').classList.add('hide');
         el('app').classList.add('show');
+        var ws2 = el('wait-screen'); if (ws2) ws2.style.display = 'none';
+        var pg2 = el('page'); if (pg2) pg2.style.display = '';
+        var top2 = el('top'); if (top2) top2.style.display = '';
         var nm = (PROF && PROF.full_name) ? PROF.full_name : ME.email;
         el('sav').textContent = ini(nm);
         el('snm').textContent = nm;
         var rm = {admin:'Admin', collaboratore:'Collab.', viewer:'Viewer'};
         el('srl').textContent = (PROF && rm[PROF.role]) ? rm[PROF.role] : '';
         el('sn-users').style.display = isAd() ? 'flex' : 'none';
-        // Wire notif close button
         var ncb = document.getElementById('notif-close');
         if (ncb) ncb.addEventListener('click', function(){ document.getElementById('notif-bar').classList.remove('show'); });
         go('dashboard');
-        // Load projects cache then check scadenze
         SB.from('projects').select('id,name').order('name').then(function(rp){
           PROJS = rp.data || [];
           checkScadenze();
@@ -1630,14 +1664,20 @@ function rUsers(){
     var rows='';
     for(var i=0;i<PROFS.length;i++){
       var u=PROFS[i];
+      var isApprBadge = u.approved === true || u.approved === 'true' || u.approved === 1;
       var rc=u.role==='admin'?'<span class="chip chip-a">Admin</span>':u.role==='collaboratore'?'<span class="chip chip-c">Collaboratore</span>':'<span class="chip chip-v">Viewer</span>';
+      if(!isApprBadge) rc+=' <span class="chip" style="background:#FFF0D6;color:var(--ora)">In attesa</span>';
       var nm=u.full_name||'(senza nome)';
       var bm='';
+      var isAppr = u.approved === true || u.approved === 'true' || u.approved === 1;
       if(u.id===ME.id){
         bm='<button class="btn btn-sm" disabled>Tu</button>';
       } else {
-        bm='<button class="btn btn-sm eu-btn" data-id="'+u.id+'">Cambia Ruolo</button>';
-        if(isAd()) bm+=' <button class="btn btn-sm btn-d du-btn" data-id="'+u.id+'" data-nm="'+esc(nm)+'">Rimuovi</button>';
+        if(!isAppr && isAd()){
+          bm='<button class="btn btn-sm" style="background:var(--oralt);color:var(--ora);border-color:transparent;font-weight:600" data-id="'+u.id+'" data-nm="'+esc(nm)+'" data-role="'+esc(u.role||'collaboratore')+'" onclick="approvaUtente(this)">&#10003; Approva / Riammetti</button> ';
+        }
+        bm+='<button class="btn btn-sm eu-btn" data-id="'+u.id+'">Cambia Ruolo</button>';
+        if(isAd()) bm+=' <button class="btn btn-sm btn-d du-btn" data-id="'+u.id+'" data-nm="'+esc(nm)+'">Revoca</button>';
       }
       rows+='<tr><td><div style="display:flex;align-items:center;gap:8px"><span class="sav" style="width:30px;height:30px;font-size:11px">'+ini(nm)+'</span><span style="font-weight:600">'+esc(nm)+'</span></div></td><td>'+rc+'</td><td class="ac">'+bm+'</td></tr>';
     }
@@ -1707,7 +1747,7 @@ function assegnaRuolo() {
   if(!NU_FOUND_ID){if(errEl){errEl.textContent='Cerca prima un utente valido.';errEl.style.display='block';}return;}
   var role = el('nu-role') ? el('nu-role').value : 'collaboratore';
   setLoading('nu-btn',true);
-  SB.from('profiles').update({role:role}).eq('id',NU_FOUND_ID).then(function(r){
+  SB.from('profiles').update({role:role, approved:true}).eq('id',NU_FOUND_ID).then(function(r){
     setLoading('nu-btn',false,'Assegna Ruolo');
     if(r.error){if(errEl){errEl.textContent='Errore: '+r.error.message;errEl.style.display='block';}return;}
     if(okEl){
@@ -1723,12 +1763,27 @@ function assegnaRuolo() {
   });
 }
 
+function approvaUtente(btn) {
+  if(!isAd()){toast('Solo Admin puo approvare utenti.','error');return;}
+  var uid = btn.getAttribute('data-id');
+  var nm = btn.getAttribute('data-nm');
+  var role = btn.getAttribute('data-role') || 'collaboratore';
+  if(!confirm('Approvare accesso per ' + nm + ' con ruolo ' + role + '?')) return;
+  SB.from('profiles').update({approved: true, role: role}).eq('id', uid).then(function(r){
+    if(r.error){toast(r.error.message,'error');return;}
+    toast(nm + ' approvato!', 'success');
+    rUsers();
+  });
+}
+
 function deleteUser(uid, nm) {
   if(!isAd()){toast('Solo Admin puo rimuovere utenti.','error');return;}
-  if (!confirm('Rimuovere ' + nm + ' dal sistema?')) return;
-  SB.from('profiles').delete().eq('id', uid).then(function(r) {
+  if (!confirm('Revocare accesso a ' + nm + '? L&#39;utente non potra piu entrare. Puo essere riammesso in seguito dall&#39;admin.')) return;
+  // Non eliminiamo il profilo (verrebbe ricreato dal trigger auth),
+  // ma impostiamo approved=false: l'utente vede la schermata di attesa al prossimo login
+  SB.from('profiles').update({approved: false, role: 'viewer'}).eq('id', uid).then(function(r) {
     if (r.error) { toast(r.error.message, 'error'); return; }
-    toast('Utente rimosso', 'success');
+    toast('Accesso revocato per ' + nm, 'success');
     rUsers();
   });
 }
@@ -1740,7 +1795,7 @@ function openEditUser(id){
 function saveUserRole(){
   if(!isAd()){toast('Solo Admin puo modificare i ruoli.','error');return;}
   setLoading('su-btn',true);
-  SB.from('profiles').update({role:el('mu-r').value}).eq('id',EUID).then(function(r){
+  SB.from('profiles').update({role:el('mu-r').value, approved:true}).eq('id',EUID).then(function(r){
     setLoading('su-btn',false); if(r.error){toast(r.error.message,'error');return;}
     toast('Ruolo aggiornato','success'); closeM('m-user'); rUsers();
   });
