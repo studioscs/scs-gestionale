@@ -445,6 +445,42 @@ tbody tr:hover td { background: #f0f4f9; }
   </div>
 </div>
 
+<!-- MODAL LINK DOCUMENTO -->
+<div class="ov" id="m-link">
+  <div class="modal modal-sm">
+    <div class="mh"><h3 id="lk-t">Aggiungi Link Documento</h3><button class="mx" data-close="m-link">&#x2715;</button></div>
+    <div class="mb">
+      <div class="ibox" style="margin-bottom:14px">Carica il file su Google Drive, OneDrive, Dropbox o il server dello studio, poi incolla il link di condivisione qui sotto.</div>
+      <div class="fg"><label class="fl">Nome documento *</label><input class="fc" id="lk-name" placeholder="Es. Relazione strutturale Rev.2"></div>
+      <div class="fg"><label class="fl">Link di condivisione *</label><input class="fc" id="lk-link" placeholder="https://drive.google.com/..."></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Progetto *</label><select class="fc" id="lk-proj"></select></div>
+        <div class="fg"><label class="fl">Cartella</label>
+          <select class="fc" id="lk-cart">
+            <option value="0-doc-esistente">0 - Doc Esistente</option>
+            <option value="1-rilievo">1 - Rilievo</option>
+            <option value="2-architettura">2 - Architettura</option>
+            <option value="3-strutture">3 - Strutture</option>
+            <option value="4-impianti-meccanici">4 - Impianti Meccanici</option>
+            <option value="5-impianti-idrico-fognari">5 - Idrico-Fognari</option>
+            <option value="6-impianti-elettrici-e-speciali">6 - Imp. Elettrici</option>
+            <option value="7-impianti-fotovoltaici">7 - Fotovoltaici</option>
+            <option value="8-impianti-antincendio">8 - Antincendio</option>
+            <option value="9-acustica">9 - Acustica</option>
+            <option value="10-elaborati-amministrativi">10 - Amm.</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Note</label><textarea class="fc" id="lk-note" rows="2" placeholder="Es. Prima emissione, in revisione..."></textarea></div>
+      <div style="display:none;background:var(--redlt);color:var(--reddk);border:1px solid #f5c6cb;border-radius:6px;padding:9px 12px;font-size:13px" id="lk-err"></div>
+    </div>
+    <div class="mf">
+      <button class="btn" data-close="m-link">Annulla</button>
+      <button class="btn btn-p" id="lk-btn">Salva</button>
+    </div>
+  </div>
+</div>
+
 <div id="tc"></div>
 
 <!-- MODAL FASE -->
@@ -496,6 +532,8 @@ tbody tr:hover td { background: #f0f4f9; }
 
 <script>
 // CONFIG
+// File Commesse: gestione tramite link esterni (Google Drive, OneDrive, ecc.)
+
 var SURL = 'https://aaneazempmhuznvornwn.supabase.co';
 var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhbmVhemVtcG1odXpudm9ybnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzA0MzIsImV4cCI6MjA5NzcwNjQzMn0.SStt_69iTybb_z-JqWYWhavROWmURyfZEguW96FQDIA';
 var SB = supabase.createClient(SURL, SKEY);
@@ -592,6 +630,10 @@ document.addEventListener('DOMContentLoaded', function() {
   el('st-btn').addEventListener('click', saveTask);
   el('ste-btn').addEventListener('click', saveTE);
   el('su-btn').addEventListener('click', saveUserRole);
+  // Link modal
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.id==='lk-btn') saveLink();
+  });
   // New member modal (search registered user)
   document.addEventListener('click', function(e){
     if(e.target && e.target.id==='nu-cerca-btn') cercaUtente();
@@ -778,35 +820,51 @@ function boot() {
   SB.auth.getUser().then(function(r) {
     if (!r.data || !r.data.user) return;
     ME = r.data.user;
-    // Email admin principale: forza sempre approved=true e role=admin prima di tutto
+
     var ADMIN_EMAIL = 'f.stortoni@studiotecnicoscs.com';
     var isMasterAdmin = ME.email && ME.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
     if (isMasterAdmin) {
-      // Aggiorna profilo in background per sicurezza
-      SB.from('profiles').upsert({
-        id: ME.id,
-        full_name: 'Francesco Stortoni',
-        email: ME.email,
-        role: 'admin',
-        approved: true
-      }, {onConflict: 'id'}).then(function(){});
+      // Admin principale: entra subito senza aspettare DB
+      // Imposta profilo minimo locale
+      PROF = {id: ME.id, full_name: 'Francesco Stortoni', email: ME.email, role: 'admin', approved: true};
+      // Prova ad aggiornare il DB in background (ignora errori)
+      SB.from('profiles').select('*').eq('id', ME.id).single().then(function(rp) {
+        if (rp.data) {
+          PROF = rp.data;
+          PROF.approved = true;
+          PROF.role = 'admin';
+          // Aggiorna in background
+          SB.from('profiles').update({role: 'admin', approved: true}).eq('id', ME.id).then(function(){});
+        } else {
+          // Profilo non esiste, crea
+          SB.from('profiles').insert({id: ME.id, full_name: 'Francesco Stortoni', email: ME.email, role: 'admin', approved: true}).then(function(){});
+        }
+      }).catch(function(){});
+      // Carica PROFS in background
+      SB.from('profiles').select('*').order('full_name').then(function(r3) {
+        PROFS = r3.data || [];
+      }).catch(function(){ PROFS = []; });
+      avviaApp();
+      return;
     }
 
-    SB.from('profiles').select('*').eq('id',ME.id).single().then(function(r2) {
+    // Tutti gli altri: controlla profilo e approvazione
+    SB.from('profiles').select('id,full_name,email,role,approved').eq('id', ME.id).single().then(function(r2) {
       PROF = r2.data;
-      // Se master admin e il profilo non e ancora aggiornato, forza i valori localmente
-      if (isMasterAdmin) {
-        if (!PROF) PROF = {id: ME.id, full_name: 'Francesco Stortoni', role: 'admin', approved: true};
-        PROF.approved = true;
-        PROF.role = 'admin';
-      }
 
-      // APPROVAZIONE: controlla approved per tutti gli altri utenti
-      var isApprovedUser = isMasterAdmin || (!PROF ? false : (PROF.approved === undefined || PROF.approved === null ? true : PROF.approved === true || PROF.approved === 'true' || PROF.approved === 1));
-      if (!PROF || !isApprovedUser) {
+      // Se profilo non esiste o non approvato: schermata attesa
+      var approvato = PROF && (
+        PROF.approved === true ||
+        PROF.approved === 1 ||
+        PROF.approved === 'true' ||
+        PROF.approved === null ||    // colonna non ancora aggiunta: permetti accesso
+        PROF.approved === undefined  // backward compat
+      );
+
+      if (!PROF || !approvato) {
         el('auth').classList.add('hide');
         el('app').classList.add('show');
-        // Show wait screen, hide main content
         var ws = el('wait-screen');
         var pg = el('page');
         var top = el('top');
@@ -820,37 +878,44 @@ function boot() {
         return;
       }
 
-      // Se master admin ma profilo non approvato, auto-approva e imposta admin
-      if (isMasterAdmin && PROF && (!PROF.approved || PROF.role !== 'admin')) {
-        SB.from('profiles').update({approved: true, role: 'admin'}).eq('id', ME.id).then(function(){});
-        PROF.approved = true; PROF.role = 'admin';
-      }
-
-      // Approvato: carica tutto e mostra app
+      // Approvato: carica PROFS e avvia
       SB.from('profiles').select('*').order('full_name').then(function(r3) {
         PROFS = r3.data || [];
-        el('auth').classList.add('hide');
-        el('app').classList.add('show');
-        var ws2 = el('wait-screen'); if (ws2) ws2.style.display = 'none';
-        var pg2 = el('page'); if (pg2) pg2.style.display = '';
-        var top2 = el('top'); if (top2) top2.style.display = '';
-        var nm = (PROF && PROF.full_name) ? PROF.full_name : ME.email;
-        el('sav').textContent = ini(nm);
-        el('snm').textContent = nm;
-        var rm = {admin:'Admin', collaboratore:'Collab.', viewer:'Viewer'};
-        el('srl').textContent = (PROF && rm[PROF.role]) ? rm[PROF.role] : '';
-        el('sn-users').style.display = isAd() ? 'flex' : 'none';
-        var ncb = document.getElementById('notif-close');
-        if (ncb) ncb.addEventListener('click', function(){ document.getElementById('notif-bar').classList.remove('show'); });
-        go('dashboard');
-        SB.from('projects').select('id,name').order('name').then(function(rp){
-          PROJS = rp.data || [];
-          checkScadenze();
-        });
+        avviaApp();
+      }).catch(function(){
+        PROFS = [];
+        avviaApp();
       });
+    }).catch(function(){
+      // Errore DB: se e admin entra comunque, altrimenti schermata attesa
+      toast('Errore connessione profilo.', 'error');
     });
   });
 }
+
+function avviaApp() {
+  el('auth').classList.add('hide');
+  el('app').classList.add('show');
+  var ws = el('wait-screen'); if (ws) ws.style.display = 'none';
+  var pg = el('page'); if (pg) pg.style.display = '';
+  var top = el('top'); if (top) top.style.display = '';
+  var nm = (PROF && PROF.full_name) ? PROF.full_name : ME.email;
+  el('sav').textContent = ini(nm);
+  el('snm').textContent = nm;
+  var rm = {admin:'Admin', collaboratore:'Collab.', viewer:'Viewer'};
+  el('srl').textContent = (PROF && rm[PROF.role]) ? rm[PROF.role] : '';
+  el('sn-users').style.display = isAd() ? 'flex' : 'none';
+  var ncb = document.getElementById('notif-close');
+  if (ncb) ncb.addEventListener('click', function(){
+    document.getElementById('notif-bar').classList.remove('show');
+  });
+  go('dashboard');
+  SB.from('projects').select('id,name').order('name').then(function(rp){
+    PROJS = rp.data || [];
+    checkScadenze();
+  }).catch(function(){ PROFS = []; });
+}
+
 
 // NAV
 function go(page) {
@@ -1037,27 +1102,7 @@ function saveProject() {
   op.then(function(r){
     setLoading('sp-btn',false);
     if(r.error){toast(r.error.message,'error');return;}
-    if(!EID && r.data && r.data.id) {
-      var pid2 = r.data.id;
-      var cartelle = [
-        '0-doc-esistente',
-        '1-rilievo',
-        '2-architettura',
-        '3-strutture',
-        '4-impianti-meccanici',
-        '5-impianti-idrico-fognari',
-        '6-impianti-elettrici-e-speciali',
-        '7-impianti-fotovoltaici',
-        '8-impianti-antincendio',
-        '9-acustica',
-        '10-elaborati-amministrativi'
-      ];
-      for (var ci=0; ci<cartelle.length; ci++) {
-        (function(cart){
-          SB.storage.from('commesse').upload(pid2+'/'+cart+'/.keep', new Blob([''],{type:'text/plain'}), {upsert:true});
-        })(cartelle[ci]);
-      }
-    }
+// nessuna cartella storage da creare
     toast(EID?'Progetto aggiornato':'Progetto creato','success');
     closeM('m-proj'); rProjects();
   });
@@ -1593,93 +1638,134 @@ function delTE(id){
 
 // FILES
 function rFiles(){
-  Promise.all([SB.from('projects').select('id,name').order('name'),SB.from('files').select('*,projects(name),profiles(full_name)').order('created_at',{ascending:false})]).then(function(rs){
-    PROJS=rs[0].data||[]; var files=rs[1].data||[];
-    var popts='<option value="">- Seleziona progetto -</option>';
-    for(var i=0;i<PROJS.length;i++) popts+='<option value="'+PROJS[i].id+'">'+esc(PROJS[i].name)+'</option>';
-    var upHtml=canW()?'<div class="fg2">'
-      +'<div class="fg"><label class="fl">Commessa *</label><select class="fc" id="uppj">'+popts+'</select></div>'
-      +'<div class="fg"><label class="fl">Cartella *</label><select class="fc" id="upcart"><option value="">-- Seleziona cartella --</option><option value=\"0-doc-esistente\">0 - Doc Esistente</option><option value=\"1-rilievo\">1 - Rilievo</option><option value=\"2-architettura\">2 - Architettura</option><option value=\"3-strutture\">3 - Strutture</option><option value=\"4-impianti-meccanici\">4 - Impianti Meccanici</option><option value=\"5-impianti-idrico-fognari\">5 - Impianti Idrico-Fognari</option><option value=\"6-impianti-elettrici-e-speciali\">6 - Impianti Elettrici e Speciali</option><option value=\"7-impianti-fotovoltaici\">7 - Impianti Fotovoltaici</option><option value=\"8-impianti-antincendio\">8 - Impianti Antincendio</option><option value=\"9-acustica\">9 - Acustica</option><option value=\"10-elaborati-amministrativi\">10 - Elaborati Amministrativi</option></select></div>'
-      +'</div>'
-      +'<div style="font-size:11px;color:var(--mut2);margin-bottom:10px" id="fiinfo">Seleziona commessa e cartella.</div>'
-      +'<div class="dz" id="dz"><div style="font-size:28px;color:var(--mut2);margin-bottom:8px">📤</div><div style="font-size:13px;color:var(--mut);line-height:1.5"><strong>Trascina file qui</strong> o clicca per selezionare<br><span style="font-size:12px">Cartella automatica per commessa in Supabase Storage</span></div></div>'
-      +'<input type="file" id="ufi" multiple style="display:none"><div id="ul" style="margin-top:12px"></div>'
-      :'<div style="color:var(--mut);font-size:13px;padding:8px 0">Solo Admin e Collaboratori possono caricare file.</div>';
+  if(canW()){
+    el('top-act').innerHTML='<button class="btn btn-p btn-sm" id="fl-new">+ Aggiungi Link</button>';
+    el('fl-new').addEventListener('click', openNewLink);
+  }
+  Promise.all([
+    SB.from('projects').select('id,name').order('name'),
+    SB.from('files').select('*,projects(name),profiles(full_name)').order('created_at',{ascending:false})
+  ]).then(function(rs){
+    PROJS = rs[0].data||[];
+    var files = rs[1].data||[];
+
+    var CART_MAP={'0-doc-esistente':'0 - Doc Esistente','1-rilievo':'1 - Rilievo','2-architettura':'2 - Architettura','3-strutture':'3 - Strutture','4-impianti-meccanici':'4 - Impianti Meccanici','5-impianti-idrico-fognari':'5 - Idrico-Fognari','6-impianti-elettrici-e-speciali':'6 - Imp. Elettrici','7-impianti-fotovoltaici':'7 - Fotovoltaici','8-impianti-antincendio':'8 - Antincendio','9-acustica':'9 - Acustica','10-elaborati-amministrativi':'10 - Amm.'};
+
     var frows='';
-    for(var f=0;f<files.length;f++){
-      var fi=files[f];
+    for(var i=0;i<files.length;i++){
+      var fi=files[i];
       var fpnm=(fi.projects&&fi.projects.name)?fi.projects.name:'-';
       var funm=(fi.profiles&&fi.profiles.full_name)?fi.profiles.full_name:'-';
       var fdt=fi.created_at?fi.created_at.split('T')[0]:null;
-      var fdb=isAd()?'<button class="btn btn-sm btn-d df-btn" data-id="'+fi.id+'" data-path="'+esc(fi.storage_path)+'" style="margin-left:4px">🗑</button>':'';
-      frows+='<tr><td style="font-weight:600">'+esc(fi.name)+'</td><td style="font-size:12px;color:var(--mut)">'+esc(fpnm)+'</td>'+(function(){var fsp=(fi.storage_path||'').split('/');var fcl=fsp.length>=3?fsp[1]:'-';var fcm={'0-doc-esistente':'0-Doc','1-rilievo':'1-Rilievo','2-architettura':'2-Arch.','3-strutture':'3-Strutt.','4-impianti-meccanici':'4-Mecc.','5-impianti-idrico-fognari':'5-Idrico','6-impianti-elettrici-e-speciali':'6-Elett.','7-impianti-fotovoltaici':'7-Fotov.','8-impianti-antincendio':'8-Antin.','9-acustica':'9-Acust.','10-elaborati-amministrativi':'10-Amm.'};return '<td style="font-size:11px;color:var(--blue)">'+esc(fcm[fcl]||fcl)+'</td>';}())+'<td style="font-size:12px">'+esc(funm)+'</td><td style="font-size:12px;color:var(--mut)">'+fsize(fi.size_bytes)+'</td><td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td><td class="ac"><button class="btn btn-sm dlf-btn" data-path="'+esc(fi.storage_path)+'" data-name="'+esc(fi.name)+'">⬇</button>'+fdb+'</td></tr>';
+      var pathParts=(fi.storage_path||'').split('/');
+      var cartSlug=pathParts.length>=2?pathParts[1]:'';
+      var cartDisp=CART_MAP[cartSlug]||cartSlug||'-';
+      var link=fi.file_link||fi.gdrive_web_link||'';
+      var openBtn=link
+        ?'<a href="'+esc(link)+'" target="_blank" rel="noopener" class="btn btn-sm" style="color:var(--blue)">&#128279; Apri</a>'
+        :'<span style="font-size:11px;color:var(--mut2)">Nessun link</span>';
+      var editBtn=canW()?'<button class="btn btn-sm efl-btn" data-id="'+fi.id+'" style="margin-left:4px">Modifica</button>':'';
+      var delBtn=isAd()?'<button class="btn btn-sm btn-d dfl-btn" data-id="'+fi.id+'" style="margin-left:4px">Elimina</button>':'';
+      frows+='<tr>'
+        +'<td style="font-weight:600;font-size:13px">'+esc(fi.name)+'</td>'
+        +'<td style="font-size:12px;color:var(--mut)">'+esc(fpnm)+'</td>'
+        +'<td style="font-size:11px;color:var(--blue)">'+esc(cartDisp)+'</td>'
+        +'<td style="font-size:12px;color:var(--mut)">'+esc(funm)+'</td>'
+        +'<td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td>'
+        +'<td class="ac" style="white-space:nowrap">'+openBtn+editBtn+delBtn+'</td>'
+        +'</tr>';
     }
-    var ftbl=files.length?'<div class="tw"><table><thead><tr><th>Nome</th><th>Commessa</th><th>Cartella</th><th>Caricato da</th><th>Dimensione</th><th>Data</th><th></th></tr></thead><tbody>'+frows+'</tbody></table></div>':'<div class="empty"><i>📁</i><p>Nessun file caricato.</p></div>';
-    el('page').innerHTML='<div class="card mb16"><div class="card-h"><span class="card-t">Carica File</span></div>'+upHtml+'</div><div class="card"><div class="card-h"><span class="card-t">File Caricati</span></div>'+ftbl+'</div>';
-    if(canW()){
-      function updFIInfo(){
-        var pid4=el('uppj')?el('uppj').value:'';
-        var cart4=el('upcart')?el('upcart').value:'';
-        var ei4=el('fiinfo'); if(!ei4)return;
-        if(pid4&&cart4){var pnm4='';for(var ix=0;ix<PROJS.length;ix++){if(PROJS[ix].id===pid4){pnm4=PROJS[ix].name;break;}}ei4.textContent='Percorso: commesse/'+pid4+'/'+cart4+'/ ('+pnm4+')';ei4.style.color='var(--blue)';}
-        else{ei4.textContent='Seleziona commessa e cartella.';ei4.style.color='';}
-      }
-      el('uppj').addEventListener('change', updFIInfo);
-      if(el('upcart')) el('upcart').addEventListener('change', updFIInfo);
-      el('dz').addEventListener('click',function(){el('ufi').click();});
-      el('dz').addEventListener('dragover',function(e){e.preventDefault();this.style.borderColor='var(--blue)';this.style.background='var(--bluelt)';});
-      el('dz').addEventListener('dragleave',function(){this.style.borderColor='';this.style.background='';});
-      el('dz').addEventListener('drop',function(e){e.preventDefault();this.style.borderColor='';this.style.background='';hFiles(e.dataTransfer.files);});
-      el('ufi').addEventListener('change',function(){hFiles(this.files);});
-    }
-    var dlbs=document.querySelectorAll('.dlf-btn'); for(var d=0;d<dlbs.length;d++){dlbs[d].addEventListener('click',function(){dlFile(this.getAttribute('data-path'),this.getAttribute('data-name'));});}
-    var dfbs=document.querySelectorAll('.df-btn'); for(var df=0;df<dfbs.length;df++){dfbs[df].addEventListener('click',function(){delFile(this.getAttribute('data-id'),this.getAttribute('data-path'));});}
+
+    var ftbl=files.length
+      ?'<div class="tw"><table><thead><tr><th>Nome</th><th>Progetto</th><th>Cartella</th><th>Aggiunto da</th><th>Data</th><th></th></tr></thead><tbody>'+frows+'</tbody></table></div>'
+      :'<div class="empty"><i>&#128193;</i><p>Nessun documento. Aggiungi il primo link.</p></div>';
+
+    el('page').innerHTML=
+      '<div class="ibox mb16" style="margin-bottom:14px">&#128279; I documenti vengono caricati su Google Drive, OneDrive, Dropbox o qualsiasi altro servizio. Incolla qui il link di condivisione per renderlo accessibile a tutti i membri del progetto.</div>'
+      +'<div class="card"><div class="card-h"><span class="card-t">Link Documenti</span><span style="font-size:12px;color:var(--mut)">'+files.length+' documenti</span></div>'+ftbl+'</div>';
+
+    var efls=document.querySelectorAll('.efl-btn');
+    for(var e=0;e<efls.length;e++){efls[e].addEventListener('click',function(){editLink(this.getAttribute('data-id'));});}
+    var dfls=document.querySelectorAll('.dfl-btn');
+    for(var d=0;d<dfls.length;d++){dfls[d].addEventListener('click',function(){delLink(this.getAttribute('data-id'));});}
   });
 }
 
-function hFiles(fileList){
+// ── LINK DOCUMENTI ────────────────────────────────────────────
+
+var LINK_EID = null;
+
+function openNewLink() {
   if(!canW()){toast('Permesso negato.','error');return;}
-  var pid=el('uppj')?el('uppj').value:'';
-  var cart=el('upcart')?el('upcart').value:'';
-  if(!pid){toast('Seleziona prima una commessa','error');return;}
-  if(!cart){toast('Seleziona la cartella di destinazione','error');return;}
-  for(var i=0;i<fileList.length;i++) upFile(fileList[i],pid,cart);
+  LINK_EID = null;
+  el('lk-t').textContent = 'Aggiungi Link Documento';
+  el('lk-name').value=''; el('lk-link').value=''; el('lk-note').value='';
+  el('lk-cart').value='0-doc-esistente';
+  fillProjSel('lk-proj', null);
+  el('lk-err').style.display='none';
+  openM('m-link');
 }
-function upFile(file,pid,cart){
-  var ul=el('ul'); if(!ul)return;
-  var uid='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-  var div=document.createElement('div'); div.className='urow'; div.id=uid;
-  div.innerHTML='<span>📄</span><div style="flex:1;min-width:0"><div class="un">'+esc(file.name)+'</div><div class="uprg"><div class="upgf" id="'+uid+'p" style="width:5%"></div></div></div><span style="font-size:12px;color:var(--mut);min-width:58px;text-align:right">'+fsize(file.size)+'</span><span id="'+uid+'s" style="font-size:12px;color:var(--mut)">Caricamento...</span>';
-  ul.appendChild(div);
-  var path=pid+(cart?'/'+cart:'')+'/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-  var pb=el(uid+'p'); if(pb)pb.style.width='20%';
-  SB.storage.from('commesse').upload(path,file,{cacheControl:'3600',upsert:false}).then(function(r){
-    var ss=el(uid+'s'),pb2=el(uid+'p');
-    if(r.error){if(ss){ss.textContent='✗ '+r.error.message;ss.style.color='var(--red)';}return;}
-    if(pb2)pb2.style.width='80%'; if(ss)ss.textContent='Salvo...';
-    SB.from('files').insert({project_id:pid,name:file.name,storage_path:path,size_bytes:file.size,mime_type:file.type||null,uploaded_by:ME.id}).then(function(r2){
-      var pb3=el(uid+'p'),ss2=el(uid+'s'); if(pb3)pb3.style.width='100%';
-      if(r2.error){if(ss2){ss2.textContent='⚠ Errore metadati';ss2.style.color='var(--yel)';}}
-      else{if(ss2){ss2.textContent='✓ Caricato';ss2.style.color='var(--grn)';}toast(file.name+' caricato','success');}
-      setTimeout(function(){rFiles();},1800);
-    });
-  });
-}
-function dlFile(path,name){
-  SB.storage.from('commesse').createSignedUrl(path,120).then(function(r){
-    if(r.error){toast(r.error.message,'error');return;}
-    var a=document.createElement('a');a.href=r.data.signedUrl;a.download=name;a.click();
-  });
-}
-function delFile(id,path){
-  if(!isAd()){toast('Solo Admin puo eliminare file.','error');return;}
-  if(!confirm('Eliminare questo file?'))return;
-  SB.storage.from('commesse').remove([path]).then(function(){
-    SB.from('files').delete().eq('id',id).then(function(r){if(r.error){toast(r.error.message,'error');return;}toast('File eliminato');rFiles();});
+
+function editLink(id) {
+  if(!canW()){toast('Permesso negato.','error');return;}
+  LINK_EID = id;
+  el('lk-t').textContent = 'Modifica Link Documento';
+  el('lk-err').style.display='none';
+  SB.from('files').select('*').eq('id',id).single().then(function(r){
+    if(!r.data)return;
+    var fi=r.data;
+    el('lk-name').value=fi.name||'';
+    el('lk-link').value=fi.file_link||fi.gdrive_web_link||'';
+    el('lk-note').value=fi.note||'';
+    var pathParts=(fi.storage_path||'').split('/');
+    el('lk-cart').value=pathParts.length>=2?pathParts[1]:'0-doc-esistente';
+    fillProjSel('lk-proj', fi.project_id);
+    openM('m-link');
   });
 }
 
-// USERS
+function saveLink() {
+  if(!canW()){toast('Permesso negato.','error');return;}
+  var name=el('lk-name').value.trim();
+  var link=el('lk-link').value.trim();
+  var proj=el('lk-proj').value;
+  var cart=el('lk-cart').value;
+  var note=el('lk-note').value.trim();
+  var errEl=el('lk-err');
+  errEl.style.display='none';
+  if(!name){errEl.textContent='Inserire il nome del documento.';errEl.style.display='block';return;}
+  if(!link){errEl.textContent='Inserire il link.';errEl.style.display='block';return;}
+  if(!proj){errEl.textContent='Selezionare il progetto.';errEl.style.display='block';return;}
+  setLoading('lk-btn',true);
+  var pay={
+    project_id:proj,
+    name:name,
+    file_link:link,
+    storage_path:proj+'/'+cart+'/'+name,
+    note:note||null,
+    uploaded_by:ME.id
+  };
+  var op=LINK_EID
+    ?SB.from('files').update(pay).eq('id',LINK_EID)
+    :SB.from('files').insert(pay);
+  op.then(function(r){
+    setLoading('lk-btn',false,'Salva');
+    if(r.error){errEl.textContent='Errore: '+r.error.message;errEl.style.display='block';return;}
+    toast(LINK_EID?'Link aggiornato':'Link aggiunto','success');
+    closeM('m-link'); LINK_EID=null; rFiles();
+  });
+}
+
+function delLink(id) {
+  if(!isAd()){toast('Solo Admin puo eliminare.','error');return;}
+  if(!confirm('Eliminare questo link dal gestionale?'))return;
+  SB.from('files').delete().eq('id',id).then(function(r){
+    if(r.error){toast(r.error.message,'error');return;}
+    toast('Link eliminato'); rFiles();
+  });
+}
+
+
 function rUsers(){
   if(!isAd()){el('page').innerHTML='<div class="card"><div class="empty"><p>Accesso riservato agli amministratori.</p></div></div>';return;}
   el('top-act').innerHTML='<button class="btn btn-p btn-sm" id="btn-newuser">+ Nuovo Utente</button>';
