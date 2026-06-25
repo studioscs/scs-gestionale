@@ -445,33 +445,16 @@ tbody tr:hover td { background: #f0f4f9; }
   </div>
 </div>
 
-<!-- MODAL LINK DOCUMENTO -->
+<!-- MODAL LINK CARTELLA PROGETTO -->
 <div class="ov" id="m-link">
   <div class="modal modal-sm">
-    <div class="mh"><h3 id="lk-t">Aggiungi Link Documento</h3><button class="mx" data-close="m-link">&#x2715;</button></div>
+    <div class="mh"><h3 id="lk-t">Aggiungi Cartella Progetto</h3><button class="mx" data-close="m-link">&#x2715;</button></div>
     <div class="mb">
-      <div class="ibox" style="margin-bottom:14px">Carica il file su Google Drive, OneDrive, Dropbox o il server dello studio, poi incolla il link di condivisione qui sotto.</div>
-      <div class="fg"><label class="fl">Nome documento *</label><input class="fc" id="lk-name" placeholder="Es. Relazione strutturale Rev.2"></div>
-      <div class="fg"><label class="fl">Link di condivisione *</label><input class="fc" id="lk-link" placeholder="https://drive.google.com/..."></div>
-      <div class="fg2">
-        <div class="fg"><label class="fl">Progetto *</label><select class="fc" id="lk-proj"></select></div>
-        <div class="fg"><label class="fl">Cartella</label>
-          <select class="fc" id="lk-cart">
-            <option value="0-doc-esistente">0 - Doc Esistente</option>
-            <option value="1-rilievo">1 - Rilievo</option>
-            <option value="2-architettura">2 - Architettura</option>
-            <option value="3-strutture">3 - Strutture</option>
-            <option value="4-impianti-meccanici">4 - Impianti Meccanici</option>
-            <option value="5-impianti-idrico-fognari">5 - Idrico-Fognari</option>
-            <option value="6-impianti-elettrici-e-speciali">6 - Imp. Elettrici</option>
-            <option value="7-impianti-fotovoltaici">7 - Fotovoltaici</option>
-            <option value="8-impianti-antincendio">8 - Antincendio</option>
-            <option value="9-acustica">9 - Acustica</option>
-            <option value="10-elaborati-amministrativi">10 - Amm.</option>
-          </select>
-        </div>
-      </div>
-      <div class="fg"><label class="fl">Note</label><textarea class="fc" id="lk-note" rows="2" placeholder="Es. Prima emissione, in revisione..."></textarea></div>
+      <div class="ibox" style="margin-bottom:14px">&#128193; Incolla il link della cartella condivisa su Google Drive, OneDrive o altro servizio. I colleghi potranno aprirla e caricare direttamente i documenti li.</div>
+      <div class="fg"><label class="fl">Progetto *</label><select class="fc" id="lk-proj"></select></div>
+      <div class="fg"><label class="fl">Descrizione *</label><input class="fc" id="lk-name" placeholder="Es. Cartella Drive — Progetto Scuola Collodi"></div>
+      <div class="fg"><label class="fl">Link cartella condivisa *</label><input class="fc" id="lk-link" placeholder="https://drive.google.com/drive/folders/..."></div>
+      <div class="fg"><label class="fl">Note</label><textarea class="fc" id="lk-note" rows="2" placeholder="Es. Accesso: tutti i membri dello studio"></textarea></div>
       <div style="display:none;background:var(--redlt);color:var(--reddk);border:1px solid #f5c6cb;border-radius:6px;padding:9px 12px;font-size:13px" id="lk-err"></div>
     </div>
     <div class="mf">
@@ -1639,69 +1622,106 @@ function delTE(id){
 // FILES
 function rFiles(){
   if(canW()){
-    el('top-act').innerHTML='<button class="btn btn-p btn-sm" id="fl-new">+ Aggiungi Link</button>';
+    el('top-act').innerHTML='<button class="btn btn-p btn-sm" id="fl-new">+ Aggiungi Cartella Progetto</button>';
     el('fl-new').addEventListener('click', openNewLink);
   }
+
   Promise.all([
-    SB.from('projects').select('id,name').order('name'),
+    SB.from('projects').select('id,name,status').order('name'),
     SB.from('files').select('*,projects(name),profiles(full_name)').order('created_at',{ascending:false})
   ]).then(function(rs){
     PROJS = rs[0].data||[];
-    var files = rs[1].data||[];
+    var links = rs[1].data||[];
 
-    var CART_MAP={'0-doc-esistente':'0 - Doc Esistente','1-rilievo':'1 - Rilievo','2-architettura':'2 - Architettura','3-strutture':'3 - Strutture','4-impianti-meccanici':'4 - Impianti Meccanici','5-impianti-idrico-fognari':'5 - Idrico-Fognari','6-impianti-elettrici-e-speciali':'6 - Imp. Elettrici','7-impianti-fotovoltaici':'7 - Fotovoltaici','8-impianti-antincendio':'8 - Antincendio','9-acustica':'9 - Acustica','10-elaborati-amministrativi':'10 - Amm.'};
-
-    var frows='';
-    for(var i=0;i<files.length;i++){
-      var fi=files[i];
-      var fpnm=(fi.projects&&fi.projects.name)?fi.projects.name:'-';
-      var funm=(fi.profiles&&fi.profiles.full_name)?fi.profiles.full_name:'-';
-      var fdt=fi.created_at?fi.created_at.split('T')[0]:null;
-      var pathParts=(fi.storage_path||'').split('/');
-      var cartSlug=pathParts.length>=2?pathParts[1]:'';
-      var cartDisp=CART_MAP[cartSlug]||cartSlug||'-';
-      var link=fi.file_link||fi.gdrive_web_link||'';
-      var openBtn=link
-        ?'<a href="'+esc(link)+'" target="_blank" rel="noopener" class="btn btn-sm" style="color:var(--blue)">&#128279; Apri</a>'
-        :'<span style="font-size:11px;color:var(--mut2)">Nessun link</span>';
-      var editBtn=canW()?'<button class="btn btn-sm efl-btn" data-id="'+fi.id+'" style="margin-left:4px">Modifica</button>':'';
-      var delBtn=isAd()?'<button class="btn btn-sm btn-d dfl-btn" data-id="'+fi.id+'" style="margin-left:4px">Elimina</button>':'';
-      frows+='<tr>'
-        +'<td style="font-weight:600;font-size:13px">'+esc(fi.name)+'</td>'
-        +'<td style="font-size:12px;color:var(--mut)">'+esc(fpnm)+'</td>'
-        +'<td style="font-size:11px;color:var(--blue)">'+esc(cartDisp)+'</td>'
-        +'<td style="font-size:12px;color:var(--mut)">'+esc(funm)+'</td>'
-        +'<td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td>'
-        +'<td class="ac" style="white-space:nowrap">'+openBtn+editBtn+delBtn+'</td>'
-        +'</tr>';
+    // Group links by project
+    var byProj = {};
+    for(var i=0;i<links.length;i++){
+      var lk=links[i];
+      var pid=lk.project_id;
+      if(!byProj[pid]) byProj[pid]=[];
+      byProj[pid].push(lk);
     }
 
-    var ftbl=files.length
-      ?'<div class="tw"><table><thead><tr><th>Nome</th><th>Progetto</th><th>Cartella</th><th>Aggiunto da</th><th>Data</th><th></th></tr></thead><tbody>'+frows+'</tbody></table></div>'
-      :'<div class="empty"><i>&#128193;</i><p>Nessun documento. Aggiungi il primo link.</p></div>';
+    var html = '<div class="ibox" style="margin-bottom:16px">&#128193; Aggiungi il link della cartella condivisa (Google Drive, OneDrive, ecc.) per ogni progetto. I colleghi caricano i documenti direttamente nella cartella, accessibile con un click.</div>';
 
-    el('page').innerHTML=
-      '<div class="ibox mb16" style="margin-bottom:14px">&#128279; I documenti vengono caricati su Google Drive, OneDrive, Dropbox o qualsiasi altro servizio. Incolla qui il link di condivisione per renderlo accessibile a tutti i membri del progetto.</div>'
-      +'<div class="card"><div class="card-h"><span class="card-t">Link Documenti</span><span style="font-size:12px;color:var(--mut)">'+files.length+' documenti</span></div>'+ftbl+'</div>';
+    if(!links.length){
+      html += '<div class="card"><div class="empty"><i>&#128193;</i><p>Nessuna cartella progetto configurata. Clicca &quot;+ Aggiungi Cartella Progetto&quot;.</p></div></div>';
+    } else {
+      for(var pid in byProj){
+        var plinks = byProj[pid];
+        var pnm = (plinks[0].projects && plinks[0].projects.name) ? plinks[0].projects.name : pn(pid);
+        var rows='';
+        for(var j=0;j<plinks.length;j++){
+          var lk=plinks[j];
+          var funm=(lk.profiles&&lk.profiles.full_name)?lk.profiles.full_name:'-';
+          var fdt=lk.created_at?lk.created_at.split('T')[0]:null;
+          var link=lk.file_link||'';
+          var openBtn=link
+            ?'<a href="'+esc(link)+'" target="_blank" rel="noopener" class="btn btn-p btn-sm">&#128193; Apri Cartella</a>'
+            :'<span style="font-size:11px;color:var(--mut2)">Nessun link</span>';
+          var editBtn=canW()?'<button class="btn btn-sm efl-btn" data-id="'+lk.id+'">Modifica</button>':'';
+          var delBtn=isAd()?'<button class="btn btn-sm btn-d dfl-btn" data-id="'+lk.id+'">Elimina</button>':'';
+          rows+='<tr>'
+            +'<td style="font-weight:600;font-size:13px">'+esc(lk.name)+'</td>'
+            +'<td style="font-size:12px;color:var(--mut)">'+esc(funm)+'</td>'
+            +'<td style="font-size:12px;color:var(--mut)">'+fdate(fdt)+'</td>'
+            +(lk.note?'<td style="font-size:12px;color:var(--mut)">'+esc(lk.note)+'</td>':'<td></td>')
+            +'<td class="ac" style="white-space:nowrap">'+openBtn+' '+editBtn+' '+delBtn+'</td>'
+            +'</tr>';
+        }
+        html+='<div class="card mb16" style="margin-bottom:16px">'
+          +'<div class="card-h"><span class="card-t">&#128193; '+esc(pnm)+'</span>'
+          +(canW()?'<button class="btn btn-sm fl-add-btn" data-pid="'+pid+'" data-pnm="'+esc(pnm)+'">+ Aggiungi</button>':'')
+          +'</div>'
+          +'<div class="tw"><table><thead><tr><th>Descrizione</th><th>Aggiunto da</th><th>Data</th><th>Note</th><th></th></tr></thead>'
+          +'<tbody>'+rows+'</tbody></table></div>'
+          +'</div>';
+      }
+    }
+
+    // Projects without any link - show quick-add
+    for(var pi=0;pi<PROJS.length;pi++){
+      var pr=PROJS[pi];
+      if(!byProj[pr.id] && pr.status==='attivo'){
+        html+='<div class="card mb16" style="margin-bottom:12px;border-style:dashed;opacity:.7">'
+          +'<div class="card-h"><span class="card-t" style="color:var(--mut)">&#128193; '+esc(pr.name)+'</span>'
+          +(canW()?'<button class="btn btn-sm fl-add-btn" data-pid="'+pr.id+'" data-pnm="'+esc(pr.name)+'">+ Aggiungi cartella</button>':'<span style="font-size:12px;color:var(--mut2)">Nessuna cartella configurata</span>')
+          +'</div></div>';
+      }
+    }
+
+    el('page').innerHTML = html;
 
     var efls=document.querySelectorAll('.efl-btn');
     for(var e=0;e<efls.length;e++){efls[e].addEventListener('click',function(){editLink(this.getAttribute('data-id'));});}
     var dfls=document.querySelectorAll('.dfl-btn');
     for(var d=0;d<dfls.length;d++){dfls[d].addEventListener('click',function(){delLink(this.getAttribute('data-id'));});}
+    var afls=document.querySelectorAll('.fl-add-btn');
+    for(var a=0;a<afls.length;a++){afls[a].addEventListener('click',function(){openNewLinkForProj(this.getAttribute('data-pid'),this.getAttribute('data-pnm'));});}
   });
 }
 
-// ── LINK DOCUMENTI ────────────────────────────────────────────
+// ── LINK CARTELLE PROGETTO ────────────────────────────────────
 
 var LINK_EID = null;
 
 function openNewLink() {
   if(!canW()){toast('Permesso negato.','error');return;}
   LINK_EID = null;
-  el('lk-t').textContent = 'Aggiungi Link Documento';
+  el('lk-t').textContent = 'Aggiungi Cartella Progetto';
   el('lk-name').value=''; el('lk-link').value=''; el('lk-note').value='';
-  el('lk-cart').value='0-doc-esistente';
   fillProjSel('lk-proj', null);
+  el('lk-err').style.display='none';
+  openM('m-link');
+}
+
+function openNewLinkForProj(pid, pnm) {
+  if(!canW()){toast('Permesso negato.','error');return;}
+  LINK_EID = null;
+  el('lk-t').textContent = 'Aggiungi Cartella - '+pnm;
+  el('lk-name').value='Cartella documenti '+pnm;
+  el('lk-link').value=''; el('lk-note').value='';
+  fillProjSel('lk-proj', pid);
   el('lk-err').style.display='none';
   openM('m-link');
 }
@@ -1709,16 +1729,14 @@ function openNewLink() {
 function editLink(id) {
   if(!canW()){toast('Permesso negato.','error');return;}
   LINK_EID = id;
-  el('lk-t').textContent = 'Modifica Link Documento';
+  el('lk-t').textContent = 'Modifica Cartella';
   el('lk-err').style.display='none';
   SB.from('files').select('*').eq('id',id).single().then(function(r){
     if(!r.data)return;
     var fi=r.data;
     el('lk-name').value=fi.name||'';
-    el('lk-link').value=fi.file_link||fi.gdrive_web_link||'';
+    el('lk-link').value=fi.file_link||'';
     el('lk-note').value=fi.note||'';
-    var pathParts=(fi.storage_path||'').split('/');
-    el('lk-cart').value=pathParts.length>=2?pathParts[1]:'0-doc-esistente';
     fillProjSel('lk-proj', fi.project_id);
     openM('m-link');
   });
@@ -1729,39 +1747,29 @@ function saveLink() {
   var name=el('lk-name').value.trim();
   var link=el('lk-link').value.trim();
   var proj=el('lk-proj').value;
-  var cart=el('lk-cart').value;
   var note=el('lk-note').value.trim();
   var errEl=el('lk-err');
   errEl.style.display='none';
-  if(!name){errEl.textContent='Inserire il nome del documento.';errEl.style.display='block';return;}
-  if(!link){errEl.textContent='Inserire il link.';errEl.style.display='block';return;}
+  if(!name){errEl.textContent='Inserire una descrizione.';errEl.style.display='block';return;}
+  if(!link){errEl.textContent='Inserire il link della cartella.';errEl.style.display='block';return;}
   if(!proj){errEl.textContent='Selezionare il progetto.';errEl.style.display='block';return;}
   setLoading('lk-btn',true);
-  var pay={
-    project_id:proj,
-    name:name,
-    file_link:link,
-    storage_path:proj+'/'+cart+'/'+name,
-    note:note||null,
-    uploaded_by:ME.id
-  };
-  var op=LINK_EID
-    ?SB.from('files').update(pay).eq('id',LINK_EID)
-    :SB.from('files').insert(pay);
+  var pay={project_id:proj, name:name, file_link:link, storage_path:proj+'/'+name, note:note||null, uploaded_by:ME.id};
+  var op=LINK_EID?SB.from('files').update(pay).eq('id',LINK_EID):SB.from('files').insert(pay);
   op.then(function(r){
     setLoading('lk-btn',false,'Salva');
     if(r.error){errEl.textContent='Errore: '+r.error.message;errEl.style.display='block';return;}
-    toast(LINK_EID?'Link aggiornato':'Link aggiunto','success');
+    toast(LINK_EID?'Aggiornato':'Cartella aggiunta','success');
     closeM('m-link'); LINK_EID=null; rFiles();
   });
 }
 
 function delLink(id) {
   if(!isAd()){toast('Solo Admin puo eliminare.','error');return;}
-  if(!confirm('Eliminare questo link dal gestionale?'))return;
+  if(!confirm('Rimuovere questo link dal gestionale?'))return;
   SB.from('files').delete().eq('id',id).then(function(r){
     if(r.error){toast(r.error.message,'error');return;}
-    toast('Link eliminato'); rFiles();
+    toast('Link rimosso'); rFiles();
   });
 }
 
